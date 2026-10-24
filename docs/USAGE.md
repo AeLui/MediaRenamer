@@ -13,16 +13,18 @@ The first time MediaRenamer is opened (when there is no preferences file yet) a 
 2. **Data services**: the API keys of TheMovieDB, TheTVDB, OMDb, AcoustID and AniDB. The ⓘ icon next to each one
    explains what it is used for, and **Get** opens the page where the key is requested. All are optional:
    ID3 tags (music) and File mode work without a key.
-3. **Jellyfin** (optional): server URL and API Key (with the URL written, **Get** opens the API keys page of your
-   server), **Test connection** and the option to scan the libraries after each rename.
+3. **Media servers** (optional): **Jellyfin** (server URL and API Key; with the URL written, **Get** opens the API
+   keys page of your server) and, below a separator, **Plex** (server URL and token; **Sign in…** fills both for you,
+   see [CONFIGURATION.md](CONFIGURATION.md#plex)). Each one has **Test connection** and the option to scan its
+   libraries after each rename. The page scrolls if it does not fit.
 
 **Finish** saves everything; **Skip setup** (or closing the window) saves only the language. Everything can be
 changed later in **Preferences**, which shows the same ⓘ icons. To see the wizard again, delete (or rename)
 `%APPDATA%\MediaRenamer\settings.properties`.
 
-| Language | Data services | Jellyfin |
+| Language | Data services | Media servers |
 |---|---|---|
-| ![](img/screenshot-wizard-language.png) | ![](img/screenshot-wizard-services.png) | ![](img/screenshot-wizard-jellyfin.png) |
+| ![](img/screenshot-wizard-language.png) | ![](img/screenshot-wizard-services.png) | ![](img/screenshot-wizard-servers.png) |
 
 ## Basic flow
 
@@ -30,7 +32,8 @@ changed later in **Preferences**, which shows the same ⓘ icons. To see the wiz
    (or click the empty area). Folders are walked including their subfolders.
 2. **Identify**: choose one of these two options.
    - **Profiles**: applies a saved profile. It sets the target folder, format, data source, episode
-     order, mode, language, action and, if specified, whether Jellyfin is scanned at the end; then it fetches the data.
+     order, mode, language, action and, if specified, whether Jellyfin and/or Plex are scanned at the end; then it
+     fetches the data.
    - **Fetch data**: choose the source (*Movies*: TheMovieDB, OMDb; *Series*: TheMovieDB TV, TheTVDB, AniDB;
      *Music*; *File*). The same menu changes the matching mode
      (strict/opportunistic), the episode order and the data language. Choosing a source here stops using the active profile.
@@ -46,11 +49,12 @@ progress (file *n* of *N* and its name) and a **Cancel** button (or the Esc key)
 
 Cancelling finishes the current file and stops. Whatever was already renamed stays in the **History** and can be undone (see [History](#history)).
 
-If *Scan the Jellyfin library after each operation* is enabled (in **Preferences → Jellyfin**, or in the
-active profile, which takes precedence), once all files have been moved the bar moves on to an extra step,
-**Scanning libraries…**, which asks Jellyfin for *Scan All Libraries* (see
-[CONFIGURATION.md](CONFIGURATION.md#jellyfin)). This step cannot be cancelled and lasts as long as the server
-takes to accept the request; if it fails, a warning is shown without undoing anything.
+If *Scan the Jellyfin library after each operation* or *Scan the Plex libraries after each operation* is enabled
+(in **Preferences → Media servers**, or in the active profile, which takes precedence), once all files have been moved
+the bar moves on to an extra step, **Scanning libraries…**, which asks each enabled server to scan its libraries (see
+[CONFIGURATION.md](CONFIGURATION.md#jellyfin) and [Plex](CONFIGURATION.md#plex)). Jellyfin goes first, then Plex.
+This step cannot be cancelled and lasts as long as the servers take to accept the request; if one fails, the other is
+still asked, and a warning per failed server is shown without undoing anything.
 
 ## Preferences
 
@@ -62,13 +66,15 @@ last category opened is shown again:
 | General | interface language, dark theme |
 | Data services | API keys (with **Get** to request each one) and the data language |
 | Target folders | default folder per type (Movies, Series, Anime, Music, Other) |
-| Jellyfin | server URL, API Key (**Get** opens the API keys page of your server once the URL is written), **Test connection**, automatic scan |
+| Media servers | **Jellyfin**: server URL, API Key (**Get** opens the API keys page of your server once the URL is written), **Test connection**, automatic scan. **Plex** (below a separator): server URL, token (**Sign in…** gets it from plex.tv), **Test connection**, automatic scan |
 | Tools | MediaInfo and fpcalc paths |
 
 Every option has an **ⓘ** icon: hover over it (or over the field) to see what it is for. The *Data services* and
-*Jellyfin* pages are the same ones the setup wizard shows.
+*Media servers* pages are the same ones the setup wizard shows.
 
 ![Preferences](img/screenshot-preferences.png)
+
+![Preferences: media servers](img/screenshot-preferences-servers.png)
 
 ## Interface language
 

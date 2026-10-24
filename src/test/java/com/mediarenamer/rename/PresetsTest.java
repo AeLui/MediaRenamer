@@ -53,13 +53,27 @@ class PresetsTest {
     void jellyfinScanIsOptional(@TempDir Path dir) {
         Path file = dir.resolve("presets.json");
         Presets store = new Presets(file);
-        store.put(new Preset("1", "With scan", "{n}", "TheMovieDB", null, null, null, null, null, true));
-        store.put(new Preset("2", "Without scan", "{n}", "TheMovieDB", null, null, null, null, null, false));
+        store.put(new Preset("1", "With scan", "{n}", "TheMovieDB", null, null, null, null, null, true, null));
+        store.put(new Preset("2", "Without scan", "{n}", "TheMovieDB", null, null, null, null, null, false, null));
         store.put(SERIES);
         Presets reloaded = new Presets(file);
         assertEquals(Boolean.TRUE, reloaded.find("With scan").orElseThrow().jellyfinScan());
         assertEquals(Boolean.FALSE, reloaded.find("Without scan").orElseThrow().jellyfinScan());
         assertNull(reloaded.find("Series para Plex").orElseThrow().jellyfinScan(), "no field = general preference");
         assertFalse(SERIES.toJson().containsKey("jellyfinScan"));
+    }
+
+    @Test
+    void plexScanIsOptionalAndIndependent(@TempDir Path dir) {
+        Path file = dir.resolve("presets.json");
+        Presets store = new Presets(file);
+        store.put(new Preset("1", "Plex only", "{n}", "TheMovieDB", null, null, null, null, null, false, true));
+        store.put(SERIES);
+        Presets reloaded = new Presets(file);
+        Preset p = reloaded.find("Plex only").orElseThrow();
+        assertEquals(Boolean.TRUE, p.plexScan());
+        assertEquals(Boolean.FALSE, p.jellyfinScan());
+        assertNull(reloaded.find("Series para Plex").orElseThrow().plexScan(), "no field = general preference");
+        assertFalse(SERIES.toJson().containsKey("plexScan"));
     }
 }

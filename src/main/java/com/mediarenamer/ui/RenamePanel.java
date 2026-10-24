@@ -24,6 +24,7 @@ import com.mediarenamer.web.AudioTrack;
 import com.mediarenamer.web.Datasource;
 import com.mediarenamer.web.Episode;
 import com.mediarenamer.web.JellyfinClient;
+import com.mediarenamer.web.PlexClient;
 import com.mediarenamer.web.EpisodeFormat;
 import com.mediarenamer.web.EpisodeListProvider;
 import com.mediarenamer.web.Movie;
@@ -1320,16 +1321,19 @@ public class RenamePanel extends JPanel {
         List<RenameEngine.Entry> work = entries;
         RenameAction action = (RenameAction) actionBox.getSelectedItem();
         ConflictAction conflict = (ConflictAction) conflictBox.getSelectedItem();
-        boolean scan = action != RenameAction.TEST && JellyfinClient.scanAfterRename(activePreset == null ? null : activePreset.jellyfinScan());
-        java.util.concurrent.atomic.AtomicReference<String> scanError = new java.util.concurrent.atomic.AtomicReference<>();
+        boolean jellyfinScan = action != RenameAction.TEST && JellyfinClient.scanAfterRename(activePreset == null ? null : activePreset.jellyfinScan());
+        boolean plexScan = action != RenameAction.TEST && PlexClient.scanAfterRename(activePreset == null ? null : activePreset.plexScan());
+        // server name -> message of a scan that could not be started
+        java.util.Map<String, String> scanErrors = java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>());
         overlay.start(action == RenameAction.TEST ? tr("rename.rename.testing") : actionLabel(action) + "…", true);
         new SwingWorker<RenameEngine.Result, Integer>() {
             @Override
             protected RenameEngine.Result doInBackground() {
                 RenameEngine.Result r = RenameEngine.execute(work, action, conflict, new ConflictDialog.Resolver(frame),
                         (i, n, f) -> overlay.progress(i - 1, n, tr("rename.rename.progress", i, n, f.getName())), overlay::isCancelled);
-                // extra step: notify Jellyfin once all files have been moved (not if cancelled)
-                if (scan && !r.cancelled() && !r.renamed().isEmpty()) {
+                // extra step: notify the media servers once all files have been moved (not if cancelled); a failure
+                // of one does not stop the other
+                if (jellyfinScan && !r.cancelled() && !r.renamed().isEmpty()) {
                     try {
                         JellyfinClient jellyfin = JellyfinClient.fromSettings();
                         overlay.step(tr("rename.jellyfin.scanning"), "Jellyfin · " + jellyfin.getBaseUrl());
@@ -1337,8 +1341,19 @@ public class RenamePanel extends JPanel {
                         Logging.info(tr("rename.jellyfin.started"));
                     } catch (Exception e) {
                         String msg = e.getMessage() != null ? e.getMessage() : e.toString();
-                        scanError.set(msg);
+                        scanErrors.put("Jellyfin", tr("rename.jellyfin.failed", msg));
                         Logging.warn("Jellyfin: " + msg);
+                    }
+                }
+                if (plexScan && !r.cancelled() && !r.renamed().isEmpty()) {
+                    try {
+                        PlexClient plex = PlexClient.fromSettings();
+                        overlay.step(tr("rename.jellyfin.scanning"), "Plex · " + plex.getBaseUrl());
+                        Logging.info(tr("rename.plex.started", plex.refreshLibraries()));
+                    } catch (Exception e) {
+                        String msg = e.getMessage() != null ? e.getMessage() : e.toString();
+                        scanErrors.put("Plex", tr("rename.plex.failed", msg));
+                        Logging.warn("Plex: " + msg);
                     }
                 }
                 return r;
@@ -1371,10 +1386,7 @@ public class RenamePanel extends JPanel {
                         JOptionPane.showMessageDialog(frame, tr("rename.rename.testDone", r.renamed().size()), tr("rename.rename.testDone.title"),
                                 JOptionPane.INFORMATION_MESSAGE);
                     }
-                    if (scanError.get() != null) {
-                        JOptionPane.showMessageDialog(frame, tr("rename.jellyfin.failed", scanError.get()),
-                                "Jellyfin", JOptionPane.WARNING_MESSAGE);
-                    }
+                    scanErrors.forEach((server, error) -> JOptionPane.showMessageDialog(frame, error, server, JOptionPane.WARNING_MESSAGE));
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(frame, e.getMessage(), tr("rename.rename"), JOptionPane.ERROR_MESSAGE);
                 }

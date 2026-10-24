@@ -36,8 +36,10 @@ command line.
   the matches by dragging.
 - **Name pre-check** (invalid characters, reserved names, lengths, duplicates…) with a cleanup
   suggestion, and a **cancellable modal progress** while fetching data and renaming.
-- **Jellyfin**: option to trigger *Scan All Libraries* through the API after each rename, globally or per profile
-  (the profile wins); server URL and API Key in Preferences, see [CONFIGURATION.md](docs/CONFIGURATION.md#jellyfin).
+- **Jellyfin and Plex**: option to scan the libraries of each server through its API after each rename, globally or
+  per profile (the profile wins). Jellyfin: server URL and API Key; Plex: **Sign in…** with your Plex account in the
+  browser fills the token and the server address. See [Jellyfin](docs/CONFIGURATION.md#jellyfin) and
+  [Plex](docs/CONFIGURATION.md#plex).
 - **Encrypted API keys** in the preferences file (Windows DPAPI), with automatic migration of old ones.
 - **History**: one row per renamed file (date, source, target), in pages, with *Revert* and **CSV export**.
 - **Subtitles and companions**: `Movie.spa.srt` follows its video keeping the language suffix.
@@ -45,10 +47,10 @@ command line.
 - **Multilingual**: interface and CLI messages in English, Spanish, French, German, Portuguese and Italian;
   chosen in **Preferences → Interface language** (defaults to the system language). See
   [CONFIGURATION.md](docs/CONFIGURATION.md#interface-language).
-- **Preferences by category** (General, Data services, Target folders, Jellyfin, Tools) with an ⓘ on every option
+- **Preferences by category** (General, Data services, Target folders, Media servers, Tools) with an ⓘ on every option
   explaining what it is for.
 - **Setup wizard on the first run**: interface language, the API keys of the data services (with what each one is
-  for and a button to get the key) and Jellyfin. See [docs/USAGE.md](docs/USAGE.md#first-run-setup-wizard).
+  for and a button to get the key) and the media servers (Jellyfin, Plex). See [docs/USAGE.md](docs/USAGE.md#first-run-setup-wizard).
 - **About MediaRenamer** (ⓘ button in the header, or click the version in the status bar): version, author, credits.
 - **Poster search**: TMDb/TheTVDB/OMDb results show poster, year, original title and
   overview; on mouse hover a card shows director/creators, cast, genres, runtime, rating…

@@ -33,13 +33,14 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
 /**
  * Setup wizard shown on the first run of the GUI, when there is no preferences file yet. Three steps: interface language, data services (the API keys, each with an ⓘ explaining what it is
- * for and a "Get" button) and Jellyfin. The last two are the same pages as in Preferences ({@link SettingsPages}).
+ * for and a "Get" button) and media servers (Jellyfin, Plex). The last two are the same pages as in Preferences ({@link SettingsPages}).
  * Everything is optional and can be changed later in Preferences.
  *
  * Choosing a language rebuilds the wizard in that language right away. "Finish" saves everything; "Skip setup" or
@@ -53,7 +54,7 @@ public class SetupWizard extends JDialog {
     private Locale language;
     /** Typed values by settings key (they survive going back and forth and the rebuild after a language change). */
     private Map<String, String> values = new HashMap<>();
-    private Boolean jellyfinScan;
+    private Map<String, Boolean> scans;
     private SettingsPages pages;
 
     public SetupWizard() {
@@ -72,7 +73,7 @@ public class SetupWizard extends JDialog {
         setLocationRelativeTo(null);
     }
 
-    /** Current step (0 = language, 1 = data services, 2 = Jellyfin); for screenshots and tests. */
+    /** Current step (0 = language, 1 = data services, 2 = media servers); for screenshots and tests. */
     int getStep() {
         return step;
     }
@@ -88,9 +89,9 @@ public class SetupWizard extends JDialog {
     private void rebuild() {
         if (pages != null) {
             values = pages.values();
-            jellyfinScan = pages.jellyfinScan();
+            scans = pages.scans();
         }
-        pages = new SettingsPages(this, values, jellyfinScan);
+        pages = new SettingsPages(this, values, scans);
         setTitle(tr("wizard.title"));
         JPanel root = new JPanel(new BorderLayout());
         root.add(header(), BorderLayout.NORTH);
@@ -98,10 +99,17 @@ public class SetupWizard extends JDialog {
         JComponent page = switch (step) {
             case 0 -> languagePage();
             case 1 -> SettingsPages.withHeader(tr("wizard.services.title"), tr("wizard.services.text"), pages.page(Category.SERVICES), 430);
-            default -> SettingsPages.withHeader(tr("wizard.jellyfin.title"), tr("wizard.jellyfin.text"), pages.page(Category.JELLYFIN), 430);
+            default -> SettingsPages.withHeader(tr("wizard.servers.title"), tr("wizard.servers.text"), pages.page(Category.SERVERS), 430);
         };
         page.setBorder(BorderFactory.createEmptyBorder(18, 22, 12, 24));
-        root.add(page, BorderLayout.CENTER);
+        // the media servers step is taller than the window: vertical scrolling only, as in Preferences
+        PreferencesDialog.WidthTrackingPanel holder = new PreferencesDialog.WidthTrackingPanel();
+        holder.add(page, BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(holder);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        root.add(scroll, BorderLayout.CENTER);
         root.add(buttons(), BorderLayout.SOUTH);
         setContentPane(root);
         getRootPane().registerKeyboardAction(e -> skip(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -149,7 +157,7 @@ public class SetupWizard extends JDialog {
         p.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Theme.border()),
                 BorderFactory.createEmptyBorder(18, 18, 18, 18)));
         p.setPreferredSize(new Dimension(210, 0));
-        String[] names = { tr("wizard.step.language"), tr("wizard.step.services"), tr("wizard.step.jellyfin") };
+        String[] names = { tr("wizard.step.language"), tr("wizard.step.services"), tr("wizard.step.servers") };
         for (int i = 0; i < names.length; i++) {
             p.add(new StepLabel(i, names[i], i == step, i < step));
             p.add(Box.createVerticalStrut(10));
@@ -259,7 +267,7 @@ public class SetupWizard extends JDialog {
         return bar;
     }
 
-    /** Saves the language, the keys and Jellyfin, and closes. */
+    /** Saves the language, the keys and the media servers, and closes. */
     void finish() {
         pages.save();
         saveLanguage();

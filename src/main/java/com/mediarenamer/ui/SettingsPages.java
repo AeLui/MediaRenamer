@@ -5,20 +5,23 @@ import static com.mediarenamer.app.I18n.tr;
 import com.mediarenamer.app.I18n;
 import com.mediarenamer.app.Settings;
 import com.mediarenamer.media.MediaInfo;
+import com.mediarenamer.web.MediaServers;
 import com.mediarenamer.web.JellyfinClient;
+import com.mediarenamer.web.PlexClient;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -29,6 +32,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import javax.swing.event.DocumentEvent;
@@ -37,17 +41,17 @@ import javax.swing.text.JTextComponent;
 
 /**
  * The settings pages shared by Preferences (one per category of its sidebar) and the setup wizard (data services and
- * Jellyfin): every option has a label, an ⓘ icon whose tooltip says what it is for (the same text is the tooltip of the
+ * media servers): every option has a label, an ⓘ icon whose tooltip says what it is for (the same text is the tooltip of the
  * field) and, when it applies, a button ("Get", "Choose…", "Test connection").
  *
  * The values start from the preferences, or from {@code initial} (the wizard keeps what was typed when it is rebuilt
- * in another language); {@link #save()} writes the text fields and the Jellyfin scan option.
+ * in another language); {@link #save()} writes the text fields and the scan options of the media servers.
  */
 final class SettingsPages {
 
     /** Preferences categories, in the order of the sidebar. */
     enum Category {
-        GENERAL, SERVICES, FOLDERS, JELLYFIN, TOOLS;
+        GENERAL, SERVICES, FOLDERS, SERVERS, TOOLS;
 
         String key() {
             return "prefs.cat." + name().toLowerCase(Locale.ROOT);
@@ -57,8 +61,9 @@ final class SettingsPages {
     private final Window owner;
     private final Map<String, String> initial;
     final Map<String, JTextComponent> fields = new LinkedHashMap<>();
-    private JCheckBox jellyfinScan;
-    private boolean scanInitial;
+    /** Scan option of each media server, by settings key (JELLYFIN_SCAN, PLEX_SCAN). */
+    private final Map<String, JCheckBox> scanBoxes = new LinkedHashMap<>();
+    private final Map<String, Boolean> scanInitial = new HashMap<>();
     /** Interface language: Locale.ROOT = automatic (the system's). Only on the General page. */
     private JComboBox<Locale> uiLanguage;
     private JCheckBox darkTheme;
@@ -67,12 +72,22 @@ final class SettingsPages {
         this(owner, Map.of(), null);
     }
 
-    /** @param initial typed values that take precedence over the preferences; scan: null = the saved preference */
-    SettingsPages(Window owner, Map<String, String> initial, Boolean scan) {
+    /**
+     * @param initial typed values that take precedence over the preferences; scans: scan options already chosen
+     *            (missing = the saved preference)
+     */
+    SettingsPages(Window owner, Map<String, String> initial, Map<String, Boolean> scans) {
         this.owner = owner;
         this.initial = initial;
-        this.scanInitial = scan != null ? scan : Settings.get().getBoolean(Settings.JELLYFIN_SCAN, false);
+        for (String key : SCAN_NEEDS.keySet()) {
+            Boolean v = scans == null ? null : scans.get(key);
+            scanInitial.put(key, v != null ? v : Settings.get().getBoolean(key, false));
+        }
     }
+
+    /** Scan option of each server and the URL and key it needs. */
+    private static final Map<String, List<String>> SCAN_NEEDS = Map.of(Settings.JELLYFIN_SCAN, List.of(Settings.JELLYFIN_URL, Settings.JELLYFIN_KEY),
+            Settings.PLEX_SCAN, List.of(Settings.PLEX_URL, Settings.PLEX_TOKEN));
 
     /** The page of a category (rows only: the caller adds its own title). */
     JComponent page(Category c) {
@@ -80,7 +95,7 @@ final class SettingsPages {
             case GENERAL -> general();
             case SERVICES -> services();
             case FOLDERS -> folders();
-            case JELLYFIN -> jellyfin();
+            case SERVERS -> servers();
             case TOOLS -> tools();
         };
     }
@@ -136,35 +151,33 @@ final class SettingsPages {
         return g.done();
     }
 
-    private JComponent jellyfin() {
+    /** Jellyfin, a separator and Plex: URL, key or token, "Test connection" and the automatic scan of each one. */
+    private JComponent servers() {
         Grid g = new Grid();
+        g.section("Jellyfin", false);
         JTextComponent url = text(Settings.JELLYFIN_URL, false);
         url.putClientProperty("JTextField.placeholderText", "http://192.168.1.10:8096");
         g.row(tr("prefs.jellyfin.url"), "info.jellyfin.url", url, null, true);
         // plain http to a host that is not local: the API key would travel unencrypted
-        JLabel insecure = new JLabel("<html><div style='width:320px'>" + tr("jellyfin.insecure.hint") + "</div></html>");
-        insecure.setForeground(new Color(0xD68910));
+        JLabel insecure = warning(tr("jellyfin.insecure.hint"));
         g.wide(insecure);
         JTextComponent key = text(Settings.JELLYFIN_KEY, true);
         JButton get = new JButton(tr("prefs.get"));
         get.addActionListener(e -> openApiKeysPage(url.getText(), get));
         g.row(tr("prefs.jellyfin.key"), "info.jellyfin.key", key, get, true);
-
-        JLabel status = new JLabel(" ");
-        status.setForeground(Theme.secondaryText());
-        JButton test = ApiService.jellyfinTestButton(url::getText, key::getText, status, () -> { });
-        JPanel testLine = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        testLine.setOpaque(false);
-        testLine.add(test);
-        testLine.add(Box.createHorizontalStrut(10));
-        testLine.add(status);
-        g.row("", null, testLine, null, false);
-
-        jellyfinScan = new JCheckBox(tr("jellyfin.scan"), scanInitial);
+        JLabel status = statusLabel();
+        JButton test = ApiService.serverTestButton(() -> {
+            String u = url.getText();
+            String k = key.getText();
+            return () -> new JellyfinClient(u, k).systemInfo();
+        }, status, () -> { });
+        g.row("", null, test, null, false);
+        g.wide(status);
+        JCheckBox jellyfinScan = scanBox(Settings.JELLYFIN_SCAN, tr("jellyfin.scan"));
         g.row(tr("prefs.jellyfin.scanLabel"), "info.jellyfin.scan", jellyfinScan, null, false);
 
         // "Get" needs the URL; "Test connection" and the scan option need the URL and the key
-        Runnable update = () -> {
+        onChange(() -> {
             boolean hasUrl = JellyfinClient.normalizeUrl(url.getText()) != null;
             boolean ready = hasUrl && !key.getText().isBlank();
             get.setEnabled(hasUrl);
@@ -172,8 +185,77 @@ final class SettingsPages {
             get.setToolTipText(hasUrl ? tr("prefs.jellyfin.get.tooltip") : tr("prefs.jellyfin.get.disabled"));
             test.setEnabled(ready);
             jellyfinScan.setEnabled(ready);
-        };
-        DocumentListener onChange = new DocumentListener() {
+        }, url, key);
+
+        g.section("Plex", true);
+        JTextComponent plexUrl = text(Settings.PLEX_URL, false);
+        plexUrl.putClientProperty("JTextField.placeholderText", "http://192.168.1.10:32400");
+        g.row(tr("prefs.plex.url"), "info.plex.url", plexUrl, null, true);
+        JLabel plexInsecure = warning(tr("plex.insecure.hint"));
+        g.wide(plexInsecure);
+        JTextComponent token = text(Settings.PLEX_TOKEN, true);
+        JLabel plexStatus = statusLabel();
+        // the sign-in fills the token (and the URL if empty): no need to look for it by hand
+        g.row(tr("prefs.plex.token"), "info.plex.token", token, PlexSignIn.button(owner, plexUrl, token, plexStatus), true);
+        JButton plexTest = ApiService.serverTestButton(() -> {
+            String u = plexUrl.getText();
+            String t = token.getText();
+            return () -> new PlexClient(u, t).systemInfo();
+        }, plexStatus, () -> { });
+        g.row("", null, plexTest, null, false);
+        g.wide(plexStatus);
+        JCheckBox plexScan = scanBox(Settings.PLEX_SCAN, tr("plex.scan"));
+        g.row(tr("prefs.jellyfin.scanLabel"), "info.plex.scan", plexScan, null, false);
+
+        onChange(() -> {
+            boolean ready = PlexClient.normalizeUrl(plexUrl.getText()) != null && !token.getText().isBlank();
+            plexInsecure.setVisible(MediaServers.isInsecureRemote(PlexClient.normalizeUrl(plexUrl.getText())));
+            plexTest.setEnabled(ready);
+            plexScan.setEnabled(ready);
+        }, plexUrl, token);
+        return g.done();
+    }
+
+    private JCheckBox scanBox(String key, String text) {
+        JCheckBox box = new JCheckBox(text, scanInitial.get(key));
+        scanBoxes.put(key, box);
+        return box;
+    }
+
+    private static JLabel warning(String text) {
+        JLabel l = new JLabel("<html><div style='width:320px'>" + text + "</div></html>");
+        l.setForeground(new Color(0xD68910));
+        return l;
+    }
+
+    private static JLabel statusLabel() {
+        JLabel status = new StatusLabel();
+        status.setForeground(Theme.secondaryText());
+        return status;
+    }
+
+    /**
+     * Status line under "Test connection": wrapped to the page width (long messages would otherwise be cut) and hidden
+     * while empty. The text
+     * can carry names and errors from the server, so it is escaped and never interpreted as HTML.
+     */
+    static final class StatusLabel extends JLabel {
+        StatusLabel() {
+            super(" ");
+        }
+
+        @Override
+        public void setText(String text) {
+            boolean empty = text == null || text.isBlank();
+            super.setText(empty ? " " : "<html><div style='width:320px'>" + text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;") + "</div></html>");
+            // hidden while empty, so that it takes no room on the page
+            setVisible(!empty);
+        }
+    }
+
+    /** Runs update now and whenever one of the fields changes. */
+    private static void onChange(Runnable update, JTextComponent... fields) {
+        DocumentListener listener = new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 update.run();
@@ -189,10 +271,10 @@ final class SettingsPages {
                 update.run();
             }
         };
-        url.getDocument().addDocumentListener(onChange);
-        key.getDocument().addDocumentListener(onChange);
+        for (JTextComponent f : fields) {
+            f.getDocument().addDocumentListener(listener);
+        }
         update.run();
-        return g.done();
     }
 
     private JComponent tools() {
@@ -243,9 +325,11 @@ final class SettingsPages {
         return v;
     }
 
-    /** Jellyfin scan option as currently shown (or the initial value if the page was not built). */
-    boolean jellyfinScan() {
-        return jellyfinScan != null ? jellyfinScan.isSelected() : scanInitial;
+    /** Scan options of the media servers as currently shown (or the initial values if the page was not built). */
+    Map<String, Boolean> scans() {
+        Map<String, Boolean> m = new HashMap<>(scanInitial);
+        scanBoxes.forEach((k, box) -> m.put(k, box.isSelected()));
+        return m;
     }
 
     /** Selected interface language tag (null = automatic), or the saved one if the General page was not built. */
@@ -262,13 +346,14 @@ final class SettingsPages {
         return darkTheme == null ? null : darkTheme.isSelected();
     }
 
-    /** Saves the text fields of the built pages and the Jellyfin scan option (only possible with URL and key). */
+    /** Saves the text fields of the built pages and the scan options (each one only possible with its URL and key). */
     void save() {
         Map<String, String> v = values();
         v.forEach((k, value) -> Settings.get().put(k, value));
-        boolean ready = !v.getOrDefault(Settings.JELLYFIN_URL, Settings.get().get(Settings.JELLYFIN_URL, "")).isBlank()
-                && !v.getOrDefault(Settings.JELLYFIN_KEY, Settings.get().get(Settings.JELLYFIN_KEY, "")).isBlank();
-        Settings.get().put(Settings.JELLYFIN_SCAN, Boolean.toString(jellyfinScan() && ready));
+        scans().forEach((scanKey, on) -> {
+            boolean ready = SCAN_NEEDS.get(scanKey).stream().noneMatch(k -> v.getOrDefault(k, Settings.get().get(k, "")).isBlank());
+            Settings.get().put(scanKey, Boolean.toString(on && ready));
+        });
     }
 
     private static String tooltip(String infoKey) {
@@ -313,6 +398,25 @@ final class SettingsPages {
                 c.weightx = 0;
                 form.add(button, c);
             }
+        }
+
+        /** Title of a group of rows (a server), with a separator above if it is not the first. */
+        void section(String title, boolean separator) {
+            c.gridy = row++;
+            c.gridx = 0;
+            c.gridwidth = 4;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 1;
+            JPanel head = new JPanel(new BorderLayout(0, 8));
+            head.setOpaque(false);
+            if (separator) {
+                head.setBorder(BorderFactory.createEmptyBorder(14, 0, 0, 0));
+                head.add(new JSeparator(), BorderLayout.NORTH);
+            }
+            JLabel t = new JLabel(title);
+            t.putClientProperty("FlatLaf.styleClass", "h4");
+            head.add(t, BorderLayout.CENTER);
+            form.add(head, c);
         }
 
         /** A line under the fields (hints, status). */

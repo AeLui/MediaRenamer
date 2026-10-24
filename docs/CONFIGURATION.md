@@ -12,8 +12,8 @@ which take precedence over the file.
 
 ### Encrypted API keys
 
-Since v0.7 the API keys (`apikey.tmdb`, `apikey.tvdb`, `apikey.tvdb.pin`, `apikey.omdb`, `apikey.acoustid`
-and `jellyfin.apikey`) are stored **encrypted** in the file:
+Since v0.7 the API keys (`apikey.tmdb`, `apikey.tvdb`, `apikey.tvdb.pin`, `apikey.omdb`, `apikey.acoustid`,
+`jellyfin.apikey` and, since v2.3, `plex.token`) are stored **encrypted** in the file:
 
 - **Windows**: user DPAPI (`CryptProtectData`), value `dpapi:…`. Only your Windows user on this machine
   can decrypt them: if you copy the file to another machine or user, those keys are ignored (warning in the log) and
@@ -50,6 +50,10 @@ and `jellyfin.apikey`) are stored **encrypted** in the file:
 | `jellyfin.url` | `MEDIARENAMER_JELLYFIN_URL` | Jellyfin server URL (`http://nas:8096`; `http://` is assumed if missing) |
 | `jellyfin.apikey` | `MEDIARENAMER_JELLYFIN_APIKEY` | Jellyfin API Key (*Dashboard → API Keys*) |
 | `jellyfin.scan` | | `true` = *Scan the Jellyfin library after each operation* (default `false`). A profile can change it |
+| `plex.url` | `MEDIARENAMER_PLEX_URL` | Plex Media Server URL (`http://nas:32400`; without scheme and port, `http://` and `:32400` are added) |
+| `plex.token` | `MEDIARENAMER_PLEX_TOKEN` | Plex token (filled by **Sign in…**) |
+| `plex.scan` | | `true` = *Scan the Plex libraries after each operation* (default `false`). A profile can change it |
+| `plex.clientid` | | Random id of this installation for plex.tv (`X-Plex-Client-Identifier`), created on the first sign-in. Not a secret |
 | `tool.mediainfo` | `MEDIARENAMER_TOOL_MEDIAINFO` | Folder or path of `MediaInfo.dll` / `MediaInfo.exe` |
 | `tool.fpcalc` | `MEDIARENAMER_TOOL_FPCALC` | Path of `fpcalc.exe` |
 | `ui.dark` | | Dark theme |
@@ -79,7 +83,7 @@ the data sources, of the orders (`Airdate`, `DVD`...) and the CLI options are no
 
 ## Jellyfin
 
-In **Preferences → Jellyfin** you set the server URL and an API Key, and enable
+In **Preferences → Media servers** (Jellyfin section) you set the server URL and an API Key, and enable
 *Scan the Jellyfin library after each operation*. The checkbox can only be ticked when the URL and the API Key
 are filled in. **Test connection** checks the typed values (without saving them) with `GET /System/Info` and
 shows the server name and version.
@@ -102,6 +106,45 @@ be changed with Jellyfin configured in Preferences (otherwise it is shown disabl
   server does not look local (not `localhost`, a private IP such as `192.168.x.x`/`10.x.x.x`, a name without a dot or a
   `.local`/`.lan`/`.home.arpa` domain), Preferences shows a warning and the log too: the API Key would travel
   unencrypted over the internet. Use `https://` for remote servers.
+
+## Plex
+
+In **Preferences → Media servers**, below Jellyfin and a separator, the Plex section has the server URL, the token,
+**Test connection** and *Scan the Plex libraries after each operation*. As with Jellyfin, the checkbox needs the URL
+and the token, each **profile** has its own Plex option (empty = Preferences; *Yes*/*No* override it; disabled while
+Plex is not configured), and Plex and Jellyfin are independent: one profile can scan both, one or none.
+
+![Media servers](img/screenshot-preferences-servers.png)
+
+**Sign in…** gets the token without looking for it by hand, with the official plex.tv PIN sign-in for applications:
+
+1. MediaRenamer asks plex.tv for a PIN (`POST https://plex.tv/api/v2/pins?strong=true`).
+2. The browser opens `https://app.plex.tv/auth#?clientID=…&code=…`: you sign in **on plex.tv** (your password is never
+   typed in MediaRenamer) and allow *MediaRenamer*. The button becomes **Cancel** while it waits; closing the window
+   also cancels. If no browser can be opened, the address is shown to copy it.
+3. MediaRenamer polls the PIN every 2 s until it carries the token or expires (plex.tv sets the expiry; MediaRenamer waits 30 min at most).
+4. It asks for your servers (`GET https://clients.plex.tv/api/v2/resources`) and keeps only **your own** ones (not
+   the shared ones). With several, it uses the one whose address is already in the URL field or asks which one.
+   The token stored is that server's access token.
+5. If the URL is empty, it tries the server's addresses, best first (local `https://…plex.direct`, local
+   `http://ip:port`, remote `https://`; relays never) with `GET /identity` (no token, 4 s each, at most 6) and writes
+   the first that answers. If none answers from this PC, the first one is written anyway and the status says so.
+
+Nothing is saved until **Save**. **Test connection** checks the typed values with `GET /` and shows the server name and
+version. MediaRenamer appears in your Plex account under *Authorized Devices*; remove it there to revoke the token.
+You can also paste a token by hand (for example one taken from *View XML* in Plex Web).
+
+- The scan lists the libraries (`GET /library/sections`) and asks each one to scan
+  (`GET /library/sections/{key}/refresh`, the same as *Scan Library Files*); Plex answers right away and the scan
+  continues on the server. Only numeric library keys are used.
+- Every request asks for JSON (`Accept: application/json`), so no XML from the server is parsed. The token goes in the
+  `X-Plex-Token` header, never in the URL; the logs hide `code=` and `X-Plex-Token=` values.
+- Values that come from plex.tv are validated: tokens and PIN codes must be short alphanumeric strings, server
+  addresses must be `http`/`https` URLs with a host and without user info, query or fragment.
+- When it is triggered, the failures and the plain-http warning work as for Jellyfin (`plex.insecure`: http to a
+  server that does not look local sends the token unencrypted).
+- Tested against a simulated server (PIN sign-in, servers, address probing, test, scan). **Not yet tested against a
+  real Plex Media Server and plex.tv.**
 
 ## External tools
 
@@ -135,7 +178,7 @@ then the combined trust is not installed.
 |---|---|
 | `%APPDATA%\MediaRenamer\settings.properties` | Preferences |
 | `%APPDATA%\MediaRenamer\history.xml` | History (for `{original}` and *Revert*) |
-| `%APPDATA%\MediaRenamer\presets.json` | Profiles (JSON list: `id`, `name`, `format`, `database`, `sortOrder`, `matchMode`, `language`, `action`, `outputFolder` and `jellyfinScan`: `true`/`false`, absent = general preference) |
+| `%APPDATA%\MediaRenamer\presets.json` | Profiles (JSON list: `id`, `name`, `format`, `database`, `sortOrder`, `matchMode`, `language`, `action`, `outputFolder`, `jellyfinScan` and `plexScan`: `true`/`false`, absent = general preference) |
 | `secret.key` | Linux/macOS only: AES key to encrypt the API keys (does not exist on Windows: DPAPI is used) |
 | `%APPDATA%\MediaRenamer\cache\` | Cached HTTP responses (safe to delete). Responses older than 31 days (the longest expiry) are removed in the background at every start |
 | `%APPDATA%\FileRenamer\` | Data of FileRenamer (up to 1.1.1): copied once, then never read or modified again |

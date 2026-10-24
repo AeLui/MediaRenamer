@@ -63,8 +63,16 @@ public final class Settings {
     public static final String JELLYFIN_KEY = "jellyfin.apikey";
     public static final String JELLYFIN_SCAN = "jellyfin.scan";
 
+    // Plex: library scan after renaming; the token comes from the plex.tv sign-in (or is pasted)
+    public static final String PLEX_URL = "plex.url";
+    public static final String PLEX_TOKEN = "plex.token";
+    public static final String PLEX_SCAN = "plex.scan";
+    /** Random id of this installation for plex.tv ("X-Plex-Client-Identifier"); not a secret. */
+    public static final String PLEX_CLIENT_ID = "plex.clientid";
+
     /** Keys stored encrypted in the file (environment variables and -D stay in plain text). */
-    public static final java.util.Set<String> SECRET_KEYS = java.util.Set.of(TMDB_KEY, TVDB_KEY, TVDB_PIN, OMDB_KEY, ACOUSTID_KEY, JELLYFIN_KEY);
+    public static final java.util.Set<String> SECRET_KEYS = java.util.Set.of(TMDB_KEY, TVDB_KEY, TVDB_PIN, OMDB_KEY, ACOUSTID_KEY, JELLYFIN_KEY,
+            PLEX_TOKEN);
 
     // External tools
     public static final String MEDIAINFO_PATH = "tool.mediainfo";

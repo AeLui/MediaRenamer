@@ -31,7 +31,7 @@ import javax.swing.ListSelectionModel;
 
 /**
  * Preferences, by category in a sidebar: General (interface language, theme), Data services (API keys, data
- * language), Target folders, Jellyfin and Tools. Every option has an ⓘ icon explaining what it is for. The pages are
+ * language), Target folders, Media servers (Jellyfin, Plex) and Tools. Every option has an ⓘ icon explaining what it is for. The pages are
  * shared with the setup wizard ({@link SettingsPages}); a single Save/Cancel applies to all of them.
  */
 public class PreferencesDialog extends JDialog {
@@ -106,8 +106,8 @@ public class PreferencesDialog extends JDialog {
         setLocationRelativeTo(owner);
     }
 
-    /** Panel inside a scroll pane that always takes the viewport width (rows shrink instead of overflowing). */
-    private static final class WidthTrackingPanel extends JPanel implements javax.swing.Scrollable {
+    /** Panel inside a scroll pane that always takes the viewport width (rows shrink instead of overflowing). Also used by the wizard. */
+    static final class WidthTrackingPanel extends JPanel implements javax.swing.Scrollable {
         WidthTrackingPanel() {
             super(new BorderLayout());
         }
@@ -148,7 +148,7 @@ public class PreferencesDialog extends JDialog {
             case GENERAL -> Icons.settings();
             case SERVICES -> Icons.search();
             case FOLDERS -> Icons.folder();
-            case JELLYFIN -> Icons.tv();
+            case SERVERS -> Icons.tv();
             case TOOLS -> Icons.format();
         };
     }

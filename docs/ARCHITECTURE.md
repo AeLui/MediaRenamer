@@ -64,7 +64,10 @@ com.mediarenamer
 - Clients: `TMDbMovieClient`, `TMDbTVClient` (base `TMDbClient`), `TheTVDBClient` (v4),
   `AniDBClient`, `OMDbClient`, `AcoustIDClient`, `ID3Lookup`; mappings `AnimeLists`, `XEM`.
 - Media servers: `JellyfinClient`:
-  `POST /Library/Refresh` after renaming and `GET /System/Info` for *Test connection*.
+  `POST /Library/Refresh` after renaming and `GET /System/Info` for *Test connection*. `PlexClient`:
+  `GET /library/sections` + `GET /library/sections/{key}/refresh` after renaming, `GET /` for *Test connection*, and
+  the plex.tv PIN sign-in (`requestPin` → `waitForToken` → `servers` → `firstReachable`). `MediaServers`: what both
+  share (URL normalization, plain-http warning, readable errors, profile precedence `shouldScan`).
 - Infrastructure: `WebRequest` (HttpClient + disk cache per URL with TTL, purged at startup; bodies limited to 64 MB; `parseXml` without external entities/DTDs, i.e. no XXE), `FloodLimit`
   (request limiter), `Json` (null-tolerant access), `WebServices` (registry and `--db` aliases).
 
@@ -109,8 +112,8 @@ com.mediarenamer
   never replaced or indexed onto (the later file fails), and a file still pending in the run is never replaced.
 - `RenameAction`, `ConflictAction`, `History` (`history.xml`).
 - `Preset` (a profile) and `Presets` (`presets.json` store +
-  own fields `outputFolder` and `jellyfinScan`, which takes precedence over `jellyfin.scan` via
-  `JellyfinClient.scanAfterRename(presetOverride)`).
+  own fields `outputFolder`, `jellyfinScan` and `plexScan`, which take precedence over `jellyfin.scan` / `plex.scan` via
+  `JellyfinClient.scanAfterRename(presetOverride)` / `PlexClient.scanAfterRename(presetOverride)`).
 - `Destinations`: base folder of the target (profile > Preferences per type > file's folder).
 - `Quality`: quality and size of a file (MediaInfo) for the conflict policies and the conflict dialog.
 - `RenameEngine.ConflictResolver` / `Decision`: "Ask each time" (GUI: `ui.ConflictDialog`; CLI: console).
@@ -137,17 +140,21 @@ com.mediarenamer
 - `ProgressOverlay`: modal layer in the window's *glass pane* (not another window) with progress and Cancel, used
   while fetching data and renaming; `RenameEngine.execute(..., Progress, BooleanSupplier cancelled)` checks for
   cancellation between files and `Result.cancelled()` reports it. `ProgressOverlay.step(...)` switches to a final
-  non-cancellable step: `RenamePanel.rename()` uses it for *Scanning libraries…* (Jellyfin) inside the same `SwingWorker`.
-- `SetupWizard`: first-run wizard (language → API keys → Jellyfin), shown by `MainFrame.open()`
+  non-cancellable step: `RenamePanel.rename()` uses it for *Scanning libraries…* (Jellyfin, then Plex; a failure of one
+  does not stop the other) inside the same `SwingWorker`.
+- `SetupWizard`: first-run wizard (language → API keys → media servers), shown by `MainFrame.open()`
   before the main window when `Settings.isFirstRun()` (there was no `settings.properties` at startup). Changing the
   language rebuilds it at once; "Finish" saves everything, "Skip setup"/closing saves only the language.
-- `SettingsPages`: the settings pages by category (General, Data services, Target folders, Jellyfin,
+- `SettingsPages`: the settings pages by category (General, Data services, Target folders, Media servers,
   Tools), each option with label · ⓘ (tooltip with what it is for, also on the field) · field · optional button. Used by
   `PreferencesDialog` (category sidebar + `CardLayout`, one Save for all, last category remembered during the session)
-  and by `SetupWizard` (Data services and Jellyfin steps). The Jellyfin "Get" button uses
-  `JellyfinClient.apiKeysPage(url)` (route by server version).
+  and by `SetupWizard` (Data services and Media servers steps). The Media servers page has a Jellyfin section and,
+  below a separator, a Plex one; the scan option of each is saved only with its URL and key/token. The Jellyfin "Get"
+  button uses `JellyfinClient.apiKeysPage(url)` (route by server version). `SettingsPages.StatusLabel`: the status line
+  under *Test connection*, wrapped, hidden while empty and HTML-escaped (it may show server names).
+- `PlexSignIn`: the Plex *Sign in…* button (PIN sign-in in `SwingWorker`s, cancellable; fills token and, if empty, URL).
 - `ApiService`: the API key fields shared by `PreferencesDialog` and `SetupWizard` (settings key, label, info text for the
-  ⓘ tooltip, "Get" URL) and the reusable Jellyfin "Test connection" button.
+  ⓘ tooltip, "Get" URL) and the reusable "Test connection" button of the media servers (`serverTestButton`).
 - `AboutDialog`: version, author, credits, Java, data folder and notices; opened from the ⓘ button of the header or by
   clicking the version in the status bar.
 - Dialogs: `PresetsDialog`, `FormatDialog` (RSyntaxTextArea + preview evaluated in a `SwingWorker`, cancelled by the

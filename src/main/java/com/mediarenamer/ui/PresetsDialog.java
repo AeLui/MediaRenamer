@@ -8,6 +8,7 @@ import com.mediarenamer.rename.Presets;
 import com.mediarenamer.rename.RenameAction;
 import com.mediarenamer.web.Datasource;
 import com.mediarenamer.web.JellyfinClient;
+import com.mediarenamer.web.PlexClient;
 import com.mediarenamer.web.SortOrder;
 import com.mediarenamer.web.WebServices;
 
@@ -40,8 +41,8 @@ public class PresetsDialog extends JDialog {
     private final String keepText = tr("presets.keep");
     private final String yes = tr("common.yes");
     private final String no = tr("common.no");
-    /** Empty option (default): the preset does not set it and the Preferences one is used. */
-    private static final String JELLYFIN_GENERAL = "";
+    /** Empty option (default) of the scan combos: the preset does not set it and the Preferences one is used. */
+    private static final String SCAN_GENERAL = "";
 
     private final DefaultListModel<Preset> model = new DefaultListModel<>();
     private final JList<Preset> list = new JList<>(model);
@@ -53,7 +54,8 @@ public class PresetsDialog extends JDialog {
     private final JTextField language = new JTextField(8);
     private final JComboBox<String> action = new JComboBox<>();
     private final JTextField output = new JTextField(32);
-    private final JComboBox<String> jellyfin = new JComboBox<>(new String[] { JELLYFIN_GENERAL, yes, no });
+    private final JComboBox<String> jellyfin = new JComboBox<>(new String[] { SCAN_GENERAL, yes, no });
+    private final JComboBox<String> plex = new JComboBox<>(new String[] { SCAN_GENERAL, yes, no });
     private Preset editing;
 
     public PresetsDialog(JFrame owner) {
@@ -101,12 +103,19 @@ public class PresetsDialog extends JDialog {
         row = row(form, c, row, tr("presets.language"), language);
         row = row(form, c, row, tr("rename.action"), action);
         // the preset option takes precedence over the Preferences one; it can only be changed with Jellyfin configured
-        row(form, c, row, tr("jellyfin.scan"), jellyfin);
+        row = row(form, c, row, tr("jellyfin.scan"), jellyfin);
         boolean jellyfinReady = JellyfinClient.isConfigured();
         jellyfin.setEnabled(jellyfinReady);
         jellyfin.setToolTipText(jellyfinReady
                 ? tr("presets.jellyfin.tooltip", com.mediarenamer.app.Settings.get().getBoolean(com.mediarenamer.app.Settings.JELLYFIN_SCAN, false) ? yes : no)
                 : tr("presets.jellyfin.disabled"));
+        // same for Plex, independent of Jellyfin
+        row(form, c, row, tr("plex.scan"), plex);
+        boolean plexReady = PlexClient.isConfigured();
+        plex.setEnabled(plexReady);
+        plex.setToolTipText(plexReady
+                ? tr("presets.jellyfin.tooltip", com.mediarenamer.app.Settings.get().getBoolean(com.mediarenamer.app.Settings.PLEX_SCAN, false) ? yes : no)
+                : tr("presets.plex.disabled"));
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttons.add(button(tr("presets.new"), () -> {
@@ -188,7 +197,8 @@ public class PresetsDialog extends JDialog {
         language.setText(p == null || p.language() == null ? "" : p.language());
         action.setSelectedItem(p == null || p.action() == null ? keepText : p.action());
         output.setText(p == null || p.outputFolder() == null ? "" : p.outputFolder());
-        jellyfin.setSelectedItem(p == null || p.jellyfinScan() == null ? JELLYFIN_GENERAL : p.jellyfinScan() ? yes : no);
+        jellyfin.setSelectedItem(p == null || p.jellyfinScan() == null ? SCAN_GENERAL : p.jellyfinScan() ? yes : no);
+        plex.setSelectedItem(p == null || p.plexScan() == null ? SCAN_GENERAL : p.plexScan() ? yes : no);
     }
 
     private void save() {
@@ -199,10 +209,15 @@ public class PresetsDialog extends JDialog {
         Preset p = new Preset(editing == null ? null : editing.id(), name.getText().trim(), format.getText().trim(), (String) database.getSelectedItem(),
                 keep(order), keep(matchMode), language.getText().trim().isEmpty() ? null : language.getText().trim(), keep(action),
                 output.getText().trim().isEmpty() ? null : output.getText().trim(),
-                JELLYFIN_GENERAL.equals(jellyfin.getSelectedItem()) ? null : yes.equals(jellyfin.getSelectedItem()));
+                scanOption(jellyfin), scanOption(plex));
         Presets.get().put(p);
         reload();
         list.setSelectedValue(p, true);
+    }
+
+    /** null = the preset does not set it (Preferences option), otherwise Yes/No. */
+    private Boolean scanOption(JComboBox<String> box) {
+        return SCAN_GENERAL.equals(box.getSelectedItem()) ? null : yes.equals(box.getSelectedItem());
     }
 
     private String keep(JComboBox<String> box) {

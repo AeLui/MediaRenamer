@@ -77,6 +77,11 @@ public final class WebRequest {
 
     /** GET with cache. ttl == null disables the cache. */
     public static byte[] get(String url, Map<String, String> headers, Duration ttl) throws IOException, InterruptedException {
+        return get(url, headers, ttl, Duration.ofSeconds(60));
+    }
+
+    /** GET with cache and a time limit for the whole request (short probes, e.g. which address of a server answers). */
+    public static byte[] get(String url, Map<String, String> headers, Duration ttl, Duration timeout) throws IOException, InterruptedException {
         Path cacheFile = ttl == null ? null : cacheFile(url, headers);
         if (cacheFile != null && Files.exists(cacheFile)) {
             long age = System.currentTimeMillis() - Files.getLastModifiedTime(cacheFile).toMillis();
@@ -88,7 +93,7 @@ public final class WebRequest {
 
         Logging.debug("GET " + redact(url));
         HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(url))
-                .timeout(Duration.ofSeconds(60))
+                .timeout(timeout)
                 .header("User-Agent", USER_AGENT)
                 .header("Accept-Encoding", "gzip");
         if (headers != null) {
@@ -276,9 +281,9 @@ public final class WebRequest {
         }
     }
 
-    /** Hides API keys in the logs. */
+    /** Hides API keys, tokens and sign-in codes in the logs. */
     static String redact(String url) {
-        return url.replaceAll("(?i)(api_?key|apikey|client)=[^&]+", "$1=***");
+        return url.replaceAll("(?i)(api_?key|apikey|client|code|x-plex-token)=[^&#]+", "$1=***");
     }
 
     private static String preview(byte[] body) {

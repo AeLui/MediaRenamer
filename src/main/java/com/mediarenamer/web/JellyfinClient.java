@@ -56,7 +56,7 @@ public final class JellyfinClient {
     }
 
     static boolean shouldScan(boolean configured, Boolean presetOverride, boolean general) {
-        return configured && (presetOverride != null ? presetOverride : general);
+        return MediaServers.shouldScan(configured, presetOverride, general);
     }
 
     /** Starts the scan of all libraries (does not wait for it to finish on the server). */
@@ -129,74 +129,16 @@ public final class JellyfinClient {
         return Map.of("Authorization", "MediaBrowser Token=\"" + apiKey + "\"", "Accept", "application/json");
     }
 
-    /**
-     * User-friendly message. HttpClient connection exceptions usually come without a
-     * message (ConnectException with getMessage() == null), and without this the warning was empty.
-     */
     IOException explain(IOException e) {
-        String msg;
-        if (e instanceof WebRequest.HttpException h && (h.getStatus() == 401 || h.getStatus() == 403)) {
-            msg = tr("jellyfin.error.key", h.getStatus());
-        } else if (e instanceof WebRequest.HttpException h) {
-            msg = tr("jellyfin.error.http", h.getStatus(), baseUrl);
-        } else if (e instanceof java.net.http.HttpTimeoutException) {
-            msg = tr("jellyfin.error.timeout", baseUrl);
-        } else if (e instanceof java.net.ConnectException || e.getMessage() == null) {
-            msg = tr("jellyfin.error.connect", baseUrl);
-        } else {
-            msg = tr("jellyfin.error.other", baseUrl, e.getMessage());
-        }
-        return new IOException(msg, e);
+        return MediaServers.explain(e, baseUrl, "jellyfin");
     }
 
-    /**
-     * true if the URL is plain http to a host that does not look local: the API key would travel unencrypted over
-     * the internet. Local means localhost, loopback, private or link-local IPv4 addresses, IPv6 loopback/ULA/link-local,
-     * names without a dot (LAN names) and the .local, .lan, .home, .home.arpa and .internal domains. No DNS lookup.
-     */
+    /** See {@link MediaServers#isInsecureRemote(String)}. */
     public static boolean isInsecureRemote(String url) {
-        String u = normalize(url);
-        if (u == null || !u.regionMatches(true, 0, "http://", 0, 7)) {
-            return false;
-        }
-        String host;
-        try {
-            host = java.net.URI.create(u).getHost();
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-        if (host == null) {
-            return false;
-        }
-        host = host.toLowerCase(java.util.Locale.ROOT).replaceAll("^\\[|\\]$", "");
-        if (host.equals("localhost") || host.endsWith(".localhost") || !host.contains(".") && !host.contains(":")) {
-            return false;
-        }
-        if (host.matches(".*\\.(local|lan|home|home\\.arpa|internal)$")) {
-            return false;
-        }
-        java.util.regex.Matcher ip = java.util.regex.Pattern.compile("(\\d+)\\.(\\d+)\\.\\d+\\.\\d+").matcher(host);
-        if (ip.matches()) {
-            int a = Integer.parseInt(ip.group(1));
-            int b = Integer.parseInt(ip.group(2));
-            return !(a == 10 || a == 127 || a == 192 && b == 168 || a == 172 && b >= 16 && b <= 31 || a == 169 && b == 254
-                    || a == 100 && b >= 64 && b <= 127);
-        }
-        if (host.contains(":")) {
-            return !(host.equals("::1") || host.startsWith("fc") || host.startsWith("fd") || host.startsWith("fe80"));
-        }
-        return true;
+        return MediaServers.isInsecureRemote(url);
     }
 
-    /** Removes spaces and trailing slashes; without a scheme http:// is assumed (usual on a local network). */
     static String normalize(String url) {
-        if (url == null || url.isBlank()) {
-            return null;
-        }
-        String u = url.trim().replaceAll("/+$", "");
-        if (!u.matches("(?i)https?://.*")) {
-            u = "http://" + u;
-        }
-        return u;
+        return MediaServers.normalize(url);
     }
 }

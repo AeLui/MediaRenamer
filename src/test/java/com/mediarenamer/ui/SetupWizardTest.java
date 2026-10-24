@@ -44,12 +44,12 @@ class SetupWizardTest {
     }
 
     @Test
-    void languageFirstThenServicesThenJellyfin() throws Exception {
+    void languageFirstThenServicesThenMediaServers() throws Exception {
         assumeFalse(GraphicsEnvironment.isHeadless());
         I18n.setLocale(Locale.ENGLISH);
         AtomicReference<String> germanTitle = new AtomicReference<>();
         AtomicReference<Set<String>> servicesFields = new AtomicReference<>();
-        AtomicReference<Set<String>> jellyfinFields = new AtomicReference<>();
+        AtomicReference<Set<String>> serverFields = new AtomicReference<>();
         SwingUtilities.invokeAndWait(() -> {
             SetupWizard w = new SetupWizard();
             assertEquals(0, w.getStep());
@@ -59,14 +59,14 @@ class SetupWizardTest {
             w.showStep(1);
             servicesFields.set(new HashSet<>(w.fieldKeys()));
             w.showStep(2);
-            jellyfinFields.set(new HashSet<>(w.fieldKeys()));
+            serverFields.set(new HashSet<>(w.fieldKeys()));
             // skipping saves the language, so that the wizard is not shown again
             w.skip();
         });
         assertEquals("Willkommen bei MediaRenamer", germanTitle.get());
         assertTrue(servicesFields.get().contains(Settings.TMDB_KEY));
         assertFalse(servicesFields.get().contains(Settings.JELLYFIN_URL));
-        assertEquals(Set.of(Settings.JELLYFIN_URL, Settings.JELLYFIN_KEY), jellyfinFields.get());
+        assertEquals(Set.of(Settings.JELLYFIN_URL, Settings.JELLYFIN_KEY, Settings.PLEX_URL, Settings.PLEX_TOKEN), serverFields.get());
         assertEquals("de", Settings.get().get(Settings.UI_LANGUAGE));
     }
 }

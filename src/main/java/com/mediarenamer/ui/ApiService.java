@@ -3,9 +3,9 @@ package com.mediarenamer.ui;
 import static com.mediarenamer.app.I18n.tr;
 
 import com.mediarenamer.app.Settings;
-import com.mediarenamer.web.JellyfinClient;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 import javax.swing.JButton;
@@ -50,20 +50,20 @@ record ApiService(String settingsKey, String labelKey, String infoKey, boolean s
     }
 
     /**
-     * "Test connection" button for Jellyfin: checks the typed URL and key (without saving them) in the background
-     * and shows the server name and version, or the error, in status. afterDone runs on the Swing thread.
+     * "Test connection" button for a media server: check is called on the Swing thread with the typed values (not
+     * saved) and returns the request to run in the background, which gives the server name and version; the result or
+     * the error is shown in status. afterDone runs on the Swing thread.
      */
-    static JButton jellyfinTestButton(Supplier<String> url, Supplier<String> key, JLabel status, Runnable afterDone) {
+    static JButton serverTestButton(Supplier<Callable<String>> check, JLabel status, Runnable afterDone) {
         JButton test = new JButton(tr("prefs.jellyfin.test"));
         test.addActionListener(e -> {
             test.setEnabled(false);
             status.setText(tr("prefs.jellyfin.connecting"));
-            String u = url.get();
-            String k = key.get();
+            Callable<String> request = check.get();
             new SwingWorker<String, Void>() {
                 @Override
                 protected String doInBackground() throws Exception {
-                    return new JellyfinClient(u, k).systemInfo();
+                    return request.call();
                 }
 
                 @Override
@@ -73,13 +73,18 @@ record ApiService(String settingsKey, String labelKey, String infoKey, boolean s
                         status.setText(tr("prefs.jellyfin.connected", get()));
                     } catch (Exception ex) {
                         Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
-                        status.setText(tr("common.error", firstLine(cause.getMessage())));
+                        status.setText(errorText(cause));
                     }
                     afterDone.run();
                 }
             }.execute();
         });
         return test;
+    }
+
+    /** "Error: first line of the message" for a status label. */
+    static String errorText(Throwable t) {
+        return tr("common.error", firstLine(t.getMessage()));
     }
 
     private static String firstLine(String s) {

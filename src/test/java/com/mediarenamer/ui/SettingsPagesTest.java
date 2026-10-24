@@ -70,8 +70,37 @@ class SettingsPagesTest {
             }
             // the text fields cover every preference shown by the old single-page dialog
             assertTrue(pages.fields.keySet().containsAll(List.of(Settings.TMDB_KEY, Settings.LANGUAGE, Settings.DEST_MOVIES, Settings.DEST_OTHER,
-                    Settings.JELLYFIN_URL, Settings.JELLYFIN_KEY, Settings.MEDIAINFO_PATH, Settings.FPCALC_PATH)), pages.fields.keySet().toString());
+                    Settings.JELLYFIN_URL, Settings.JELLYFIN_KEY, Settings.PLEX_URL, Settings.PLEX_TOKEN, Settings.MEDIAINFO_PATH, Settings.FPCALC_PATH)),
+                    pages.fields.keySet().toString());
         });
+    }
+
+    @Test
+    void statusLineNeverRendersServerTextAsHtml() {
+        // a hostile server name could load remote images or fake the dialog if Swing rendered it as HTML
+        JLabel status = new SettingsPages.StatusLabel();
+        status.setText("Connected: <html><img src='http://evil.example/x.png'> & co");
+        assertEquals("<html><div style='width:320px'>Connected: &lt;html&gt;&lt;img src='http://evil.example/x.png'&gt; &amp; co</div></html>",
+                status.getText());
+        status.setText("");
+        assertEquals(" ", status.getText());
+    }
+
+    @Test
+    void plexScanIsOnlySavedWithUrlAndToken() {
+        try {
+            new SettingsPages(null, java.util.Map.of(Settings.PLEX_URL, "nas", Settings.PLEX_TOKEN, ""), java.util.Map.of(Settings.PLEX_SCAN, true)).save();
+            assertEquals("false", Settings.get().get(Settings.PLEX_SCAN));
+            new SettingsPages(null, java.util.Map.of(Settings.PLEX_URL, "nas", Settings.PLEX_TOKEN, "Token-123456789"), java.util.Map.of(Settings.PLEX_SCAN, true))
+                    .save();
+            assertEquals("true", Settings.get().get(Settings.PLEX_SCAN));
+            // the Jellyfin option is independent and keeps its own rule
+            assertEquals("false", Settings.get().get(Settings.JELLYFIN_SCAN, "false"));
+        } finally {
+            for (String k : List.of(Settings.PLEX_URL, Settings.PLEX_TOKEN, Settings.PLEX_SCAN, Settings.JELLYFIN_SCAN)) {
+                Settings.get().put(k, null);
+            }
+        }
     }
 
     private static void count(Container c, AtomicInteger fields, AtomicInteger infos) {

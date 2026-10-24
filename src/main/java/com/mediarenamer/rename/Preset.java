@@ -14,10 +14,11 @@ import java.util.Map;
  * {"@type":"Preset","id":"..","name":"..","format":"..","database":"TheMovieDB","sortOrder":"Airdate",
  * "matchMode":"Opportunistic","language":"es","action":"MOVE"}
  * plus two own fields: "outputFolder", the preset's target folder (takes precedence over the Preferences one),
- * and "jellyfinScan", scan Jellyfin after renaming with this preset (true/false; absent = use the general preference).
+ * "jellyfinScan" and "plexScan", scan Jellyfin / Plex after renaming with this preset (true/false; absent = use the
+ * general preference).
  */
 public record Preset(String id, String name, String format, String database, String sortOrder, String matchMode, String language, String action,
-        String outputFolder, Boolean jellyfinScan) {
+        String outputFolder, Boolean jellyfinScan, Boolean plexScan) {
 
     public Preset {
         if (id == null || id.isBlank()) {
@@ -28,13 +29,13 @@ public record Preset(String id, String name, String format, String database, Str
 
     /** Preset without its own target folder. */
     public Preset(String id, String name, String format, String database, String sortOrder, String matchMode, String language, String action) {
-        this(id, name, format, database, sortOrder, matchMode, language, action, null, null);
+        this(id, name, format, database, sortOrder, matchMode, language, action, null, null, null);
     }
 
-    /** Preset that uses the general Jellyfin preference. */
+    /** Preset that uses the general Jellyfin and Plex preferences. */
     public Preset(String id, String name, String format, String database, String sortOrder, String matchMode, String language, String action,
             String outputFolder) {
-        this(id, name, format, database, sortOrder, matchMode, language, action, outputFolder, null);
+        this(id, name, format, database, sortOrder, matchMode, language, action, outputFolder, null, null);
     }
 
     /** null if the source does not exist or it is the file mode. */
@@ -85,12 +86,19 @@ public record Preset(String id, String name, String format, String database, Str
         if (jellyfinScan != null) {
             m.put("jellyfinScan", jellyfinScan);
         }
+        if (plexScan != null) {
+            m.put("plexScan", plexScan);
+        }
         return m;
     }
 
     public static Preset fromJson(Map<?, ?> m) {
         return new Preset(str(m, "id"), str(m, "name"), str(m, "format"), str(m, "database"), str(m, "sortOrder"), str(m, "matchMode"), str(m, "language"),
-                str(m, "action"), str(m, "outputFolder"), m.get("jellyfinScan") == null ? null : Boolean.valueOf(m.get("jellyfinScan").toString()));
+                str(m, "action"), str(m, "outputFolder"), bool(m, "jellyfinScan"), bool(m, "plexScan"));
+    }
+
+    private static Boolean bool(Map<?, ?> m, String k) {
+        return m.get(k) == null ? null : Boolean.valueOf(m.get(k).toString());
     }
 
     private static void putIfPresent(Map<String, Object> m, String k, String v) {

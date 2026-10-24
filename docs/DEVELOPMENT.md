@@ -97,7 +97,7 @@ java -cp "target/classes;target/test-classes;$(cat target/cp.txt)" com.mediarena
 | `EpisodeMatchingTest` | `Matcher` + `EpisodeMetrics`: SxE, multi-episode, season from the folder, strict mode, bare numbers vs absolute numbers |
 | `JellyfinClientTest` | Jellyfin scan (`POST /Library/Refresh`, token header, `/System/Info`, wrong key, server down, URL, profile precedence) and the API keys page by version (`/System/Info/Public`) against a local `HttpServer` |
 | `RenamePanelLayoutTest` | The two list cards are equally wide and the window is symmetric, in every language and window width |
-| `SettingsPagesTest` | Every Preferences category has title and description, every option has its ⓘ and every `info.*` text exists |
+| `SettingsPagesTest` | Every Preferences category has title and description, every option has its ⓘ and every `info.*` text exists; the Plex scan option is only saved with URL and token; the status line never renders server text as HTML |
 | `I18nTest` | The 6 languages have the same keys and parameters, every key used in the code exists, plurals, `--conflict ask` letters, default language |
 | `TrustStoresTest` | HTTPS trust: a chain is accepted if `cacerts` or the Windows store trusts it, rejected if none does |
 | `SettingsSecretsTest` | API key encryption (DPAPI on Windows), migration of a plain-text file without losing preferences, undecryptable value, re-encryption of FileRenamer's DPAPI keys |
@@ -110,9 +110,10 @@ java -cp "target/classes;target/test-classes;$(cat target/cp.txt)" com.mediarena
 | `ToolLookupTest` | No tool lookup relative to the working directory (planted DLL ignored), malformed `PATH` entries, process timeout |
 | `SaveSafetyTest` | Atomic writes, history round trip with special characters, unique profile ids |
 | `JellyfinInsecureUrlTest` | Plain http warning only for servers that do not look local |
+| `PlexClientTest` | Plex scan (sections + refresh per library, token only in the header, hostile library keys ignored), *Test connection*, wrong token, server down, default port; plex.tv PIN sign-in (polling, cancel, expiry, hostile tokens rejected), own servers only with safe addresses best first (relays, `file:`, user info rejected), address probing without token, bounded candidates, redacted logs; against a local `HttpServer` |
 | `AppFoldersMigrationTest` | copy of the FileRenamer data folder: everything copied and the old one kept, an existing folder is never overwritten, nothing to migrate, interrupted copy repeated |
 
-The tests use no network (the Jellyfin one starts a server on `127.0.0.1`) **and none of your preferences**: `pom.xml`
+The tests use no network (the Jellyfin and Plex ones start a server on `127.0.0.1`) **and none of your preferences**: `pom.xml`
 sets `mediarenamer.data=target/test-data` in surefire, because `Settings.get()` would load (and migrate)
 `%APPDATA%\MediaRenamer`. For tests against real APIs, write tests that check
 `Boolean.getBoolean("network")` and run them with `mvn test -Dnetwork=true` (the pom already passes the property).
