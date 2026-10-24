@@ -49,7 +49,7 @@ progress (file *n* of *N* and its name) and a **Cancel** button (or the Esc key)
 
 Cancelling finishes the current file and stops. Whatever was already renamed stays in the **History** and can be undone (see [History](#history)).
 
-If *Scan the Jellyfin library after each operation* or *Scan the Plex libraries after each operation* is enabled
+If *Scan the Jellyfin libraries after each operation* or *Scan the Plex libraries after each operation* is enabled
 (in **Preferences → Media servers**, or in the active profile, which takes precedence), once all files have been moved
 the bar moves on to an extra step, **Scanning libraries…**, which asks each enabled server to scan its libraries (see
 [CONFIGURATION.md](CONFIGURATION.md#jellyfin) and [Plex](CONFIGURATION.md#plex)). Jellyfin goes first, then Plex.

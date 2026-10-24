@@ -49,7 +49,7 @@ Since v0.7 the API keys (`apikey.tmdb`, `apikey.tvdb`, `apikey.tvdb.pin`, `apike
 | `rename.db.episode/movie/music` | | Last source chosen per mode |
 | `jellyfin.url` | `MEDIARENAMER_JELLYFIN_URL` | Jellyfin server URL (`http://nas:8096`; `http://` is assumed if missing) |
 | `jellyfin.apikey` | `MEDIARENAMER_JELLYFIN_APIKEY` | Jellyfin API Key (*Dashboard → API Keys*) |
-| `jellyfin.scan` | | `true` = *Scan the Jellyfin library after each operation* (default `false`). A profile can change it |
+| `jellyfin.scan` | | `true` = *Scan the Jellyfin libraries after each operation* (default `false`). A profile can change it |
 | `plex.url` | `MEDIARENAMER_PLEX_URL` | Plex Media Server URL (`http://nas:32400`; without scheme and port, `http://` and `:32400` are added) |
 | `plex.token` | `MEDIARENAMER_PLEX_TOKEN` | Plex token (filled by **Sign in…**) |
 | `plex.scan` | | `true` = *Scan the Plex libraries after each operation* (default `false`). A profile can change it |
@@ -84,11 +84,11 @@ the data sources, of the orders (`Airdate`, `DVD`...) and the CLI options are no
 ## Jellyfin
 
 In **Preferences → Media servers** (Jellyfin section) you set the server URL and an API Key, and enable
-*Scan the Jellyfin library after each operation*. The checkbox can only be ticked when the URL and the API Key
+*Scan the Jellyfin libraries after each operation*. The checkbox can only be ticked when the URL and the API Key
 are filled in. **Test connection** checks the typed values (without saving them) with `GET /System/Info` and
 shows the server name and version.
 
-Each **profile** has the same option, **empty by default**: empty = the Preferences setting is used; *Yes* or *No*
+Each **profile** has the same option, ***(don't change)* by default**: the Preferences setting is used; *Yes* or *No*
 **override the general preference**. In the profile editor the option can only
 be changed with Jellyfin configured in Preferences (otherwise it is shown disabled and there is never a scan).
 
@@ -111,7 +111,7 @@ be changed with Jellyfin configured in Preferences (otherwise it is shown disabl
 
 In **Preferences → Media servers**, below Jellyfin and a separator, the Plex section has the server URL, the token,
 **Test connection** and *Scan the Plex libraries after each operation*. As with Jellyfin, the checkbox needs the URL
-and the token, each **profile** has its own Plex option (empty = Preferences; *Yes*/*No* override it; disabled while
+and the token, each **profile** has its own Plex option (*(don't change)* = Preferences; *Yes*/*No* override it; disabled while
 Plex is not configured), and Plex and Jellyfin are independent: one profile can scan both, one or none.
 
 ![Media servers](img/screenshot-preferences-servers.png)

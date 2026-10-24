@@ -38,11 +38,10 @@ import javax.swing.ListSelectionModel;
 /** Preset management: create, edit and delete. */
 public class PresetsDialog extends JDialog {
 
+    /** "(don't change)": the preset does not set the option (for the scan combos: the Preferences one is used). */
     private final String keepText = tr("presets.keep");
     private final String yes = tr("common.yes");
     private final String no = tr("common.no");
-    /** Empty option (default) of the scan combos: the preset does not set it and the Preferences one is used. */
-    private static final String SCAN_GENERAL = "";
 
     private final DefaultListModel<Preset> model = new DefaultListModel<>();
     private final JList<Preset> list = new JList<>(model);
@@ -54,8 +53,8 @@ public class PresetsDialog extends JDialog {
     private final JTextField language = new JTextField(8);
     private final JComboBox<String> action = new JComboBox<>();
     private final JTextField output = new JTextField(32);
-    private final JComboBox<String> jellyfin = new JComboBox<>(new String[] { SCAN_GENERAL, yes, no });
-    private final JComboBox<String> plex = new JComboBox<>(new String[] { SCAN_GENERAL, yes, no });
+    private final JComboBox<String> jellyfin = new JComboBox<>(new String[] { keepText, yes, no });
+    private final JComboBox<String> plex = new JComboBox<>(new String[] { keepText, yes, no });
     private Preset editing;
 
     public PresetsDialog(JFrame owner) {
@@ -100,6 +99,8 @@ public class PresetsDialog extends JDialog {
         row = row(form, c, row, tr("presets.database"), database);
         row = row(form, c, row, tr("episode.order"), order);
         row = row(form, c, row, tr("match.mode"), matchMode);
+        // empty = do not change the language, shown in the empty field like in the combos
+        language.putClientProperty("JTextField.placeholderText", keepText);
         row = row(form, c, row, tr("presets.language"), language);
         row = row(form, c, row, tr("rename.action"), action);
         // the preset option takes precedence over the Preferences one; it can only be changed with Jellyfin configured
@@ -197,8 +198,8 @@ public class PresetsDialog extends JDialog {
         language.setText(p == null || p.language() == null ? "" : p.language());
         action.setSelectedItem(p == null || p.action() == null ? keepText : p.action());
         output.setText(p == null || p.outputFolder() == null ? "" : p.outputFolder());
-        jellyfin.setSelectedItem(p == null || p.jellyfinScan() == null ? SCAN_GENERAL : p.jellyfinScan() ? yes : no);
-        plex.setSelectedItem(p == null || p.plexScan() == null ? SCAN_GENERAL : p.plexScan() ? yes : no);
+        jellyfin.setSelectedItem(p == null || p.jellyfinScan() == null ? keepText : p.jellyfinScan() ? yes : no);
+        plex.setSelectedItem(p == null || p.plexScan() == null ? keepText : p.plexScan() ? yes : no);
     }
 
     private void save() {
@@ -217,7 +218,7 @@ public class PresetsDialog extends JDialog {
 
     /** null = the preset does not set it (Preferences option), otherwise Yes/No. */
     private Boolean scanOption(JComboBox<String> box) {
-        return SCAN_GENERAL.equals(box.getSelectedItem()) ? null : yes.equals(box.getSelectedItem());
+        return keepText.equals(box.getSelectedItem()) ? null : yes.equals(box.getSelectedItem());
     }
 
     private String keep(JComboBox<String> box) {
