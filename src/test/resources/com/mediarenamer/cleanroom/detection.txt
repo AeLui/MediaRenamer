@@ -1,0 +1,43 @@
+# Series / movie / season detection reference cases (docs/MATCHING.md, section 3).
+# Format: function | path | expected ("none" = null)
+#   series: MediaDetection.detectSeriesName
+#   movie: MediaDetection.detectMovie, written as MovieQuery.toString() ("Name (year)" or "Name" without year)
+#   folderSeason: MediaDetection.folderSeason
+#   episode: EpisodeMetrics.sxe(file), same notation as sxe.txt
+
+series | The.Walking.Dead.S05E01.720p.HDTV.x264-KILLERS.mkv | The Walking Dead
+series | Breaking Bad - 1x01 - Pilot.avi | Breaking Bad
+series | Dark.S01E01.1080p.WEB-DL.DUAL.mkv | Dark
+series | Doctor.Who.2005.S13E01.mkv | Doctor Who 2005
+series | Show Name Season 2 Episode 3.mkv | Show Name
+series | [SubsPlease] Frieren - 05 (1080p) [ABCD1234].mkv | Frieren
+series | The.Daily.Show.2024.03.15.1080p.WEB.mkv | The Daily Show
+series | D:/Series/The Office/Season 2/S02E03.mkv | The Office
+series | D:/Series/The Office/Temporada 2/02.mkv | The Office
+series | D:/Downloads/Show.Name.S01E02.mkv | Show Name
+series | D:/Series/Dark/Staffel 1/Dark.S01E01.mkv | Dark
+
+movie | Mufasa.2024.WEB-DL.4K.SDR.mkv | Mufasa (2024)
+movie | 3_Pequeños_Ninjas_1992_WEBRip_m1080p_h264_AC3_Spa_Eng_+Sub.mp4 | 3 Pequeños Ninjas (1992)
+movie | Blade Runner (1982) [1080p].mkv | Blade Runner (1982)
+movie | C:/Pelis/Alien (1979)/movie.mkv | Alien (1979)
+movie | 2001.A.Space.Odyssey.1968.1080p.mkv | 2001 A Space Odyssey (1968)
+movie | The.Matrix.1999.mkv | The Matrix (1999)
+movie | Amélie (2001).mkv | Amélie (2001)
+movie | Movie Without Year.mkv | Movie Without Year
+movie | C:/Movies/Inception (2010)/inception.1080p.mkv | Inception (2010)
+movie | Torrente.5.2011.Castellano.microHD.1080p.AC3.mkv | Torrente 5 (2011)
+
+folderSeason | D:/TV/Show/Season 2/x.mkv | 2
+folderSeason | D:/TV/Show/Temporada 03/x.mkv | 3
+folderSeason | D:/TV/Show/S04/x.mkv | 4
+folderSeason | D:/TV/Show/Staffel 1/x.mkv | 1
+folderSeason | D:/TV/Show/Saison 5/x.mkv | 5
+folderSeason | D:/TV/Show/x.mkv | none
+folderSeason | D:/TV/Seasons/x.mkv | none
+
+episode | D:/Show/Season 2/05 - Title.mkv | 2x5
+episode | D:/Show/Season 2/Show.E07.mkv | 2x7
+episode | D:/Show/Season 2/Show.S03E01.mkv | 3x1
+episode | D:/Show/Show.S01E01.mkv | 1x1
+episode | D:/Show/Temporada 1/Capitulo 3.mkv | 1x3

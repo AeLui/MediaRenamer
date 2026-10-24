@@ -1,0 +1,62 @@
+# Release information reference cases (docs/MATCHING.md, section 1).
+# Format: function | file name | expected ("none" = null)
+#   strip / stripStrict: MediaDetection.stripReleaseInfo(name, false / true)
+#   source: ReleaseInfo.getVideoSource   tags: ReleaseInfo.getVideoTags   group: ReleaseInfo.getReleaseGroup
+#   s3d: first match of ReleaseInfo.VIDEO_S3D   subtitle: first match of ReleaseInfo.SUBTITLE_TAGS
+#   clutter: ReleaseInfo.isClutter
+
+strip | Movie.Title.2010.1080p.BluRay.x264.DTS-HD.MA.5.1-FGT.mkv | Movie Title 2010
+strip | The.Walking.Dead.S05E01.720p.HDTV.x264-KILLERS.mkv | The Walking Dead S05E01
+strip | Some.Show.S02E03.PROPER.720p.HDTV.x264-DIMENSION.mkv | Some Show S02E03
+strip | Blade Runner (1982) [1080p].mkv | Blade Runner (1982)
+stripStrict | Blade Runner (1982) [1080p].mkv | Blade Runner
+strip | Avatar.2009.EXTENDED.REPACK.1080p.WEB-DL.DUAL.mkv | Avatar 2009
+strip | Oppenheimer.2023.IMAX.1080p.AMZN.WEB-DL.DDP5.1.H.264-FLUX.mkv | Oppenheimer 2023
+strip | Dune.Part.Two.2024.2160p.UHD.BluRay.REMUX.HDR.HEVC.Atmos-FGT.mkv | Dune Part Two 2024
+strip | [SubsPlease] Frieren - 05 (1080p) [ABCD1234].mkv | Frieren - 05
+strip | Mufasa.2024.WEB-DL.4K.SDR.mkv | Mufasa 2024
+strip | Torrente.5.2011.Castellano.microHD.1080p.AC3.mkv | Torrente 5 2011
+strip | Movie.2010.VOSE.720p.mkv | Movie 2010
+strip | Movie.Name.2015.Director's.Cut.1080p.mkv | Movie Name 2015
+
+source | Movie.2010.1080p.BluRay.x264.mkv | BluRay
+source | Show.S01E01.720p.HDTV.x264.mkv | HDTV
+source | Show.S01E01.1080p.WEB-DL.mkv | WEB-DL
+source | Movie.2010.DVDRip.XviD.avi | DVDRip
+source | Movie.2010.HDCAM.mkv | HDCAM
+source | Movie.2010.1080p.mkv | none
+
+tags | Aliens.1986.Special.Edition.mkv | Special Edition
+tags | Blade.Runner.1982.The.Final.Cut.mkv | Final Cut
+tags | Movie.2010.Directors.Cut.mkv | Directors Cut
+tags | Movie.2010.EXTENDED.1080p.mkv | EXTENDED
+tags | Movie.2010.Unrated.mkv | Unrated
+tags | Movie.2010.1080p.mkv | none
+
+group | Movie.2010.1080p.BluRay.x264-SPARKS.mkv | SPARKS
+group | Show.S01E01.720p.HDTV.x264-KILLERS.mkv | KILLERS
+group | [SubsPlease] Frieren - 05 (1080p).mkv | SubsPlease
+group | Movie.2010.1080p.WEB-DL.x264-NewGroup.mkv | NewGroup
+group | Movie (2010) [YTS].mp4 | YTS
+group | Movie.2010.x264-1080p.mkv | none
+group | Show.1990-2000.mkv | none
+group | Movie.2010.mkv | none
+
+s3d | Avatar.2009.3D.HSBS.1080p.mkv | HSBS
+s3d | Movie.2012.3D.Half-OU.mkv | Half-OU
+s3d | Movie.2012.3D.SBS.mkv | SBS
+s3d | Movie.2012.1080p.mkv | none
+
+subtitle | Movie.2010.eng.forced | forced
+subtitle | Movie.2010.en.sdh | sdh
+subtitle | Movie.2010.en | none
+
+clutter | Movie.2010-sample.mkv | true
+clutter | sample.mkv | true
+clutter | Movie.2010.Trailer.mkv | true
+clutter | Behind the Scenes.mkv | true
+clutter | Deleted Scenes.mkv | true
+clutter | NCOP 01.mkv | true
+clutter | The Sample Movie (2010).mkv | false
+clutter | Interview with the Vampire (1994).mkv | false
+clutter | Movie.2010.1080p.mkv | false

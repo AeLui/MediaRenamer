@@ -1,0 +1,25 @@
+# {vf} resolution class reference cases (docs/FORMAT.md, {vf} in the variables table).
+# Checked against MediaCharacteristics.videoFormat(int width, int height, boolean interlaced).
+# Format: width | height | p or i | expected
+
+1920 | 1080 | p | 1080p
+1920 | 800 | p | 1080p
+1916 | 1076 | p | 1080p
+1440 | 1080 | p | 1080p
+2048 | 858 | p | 1080p
+1920 | 1080 | i | 1080i
+1280 | 720 | p | 720p
+1280 | 536 | p | 720p
+1024 | 576 | p | 576p
+720 | 576 | i | 576i
+720 | 480 | p | 480p
+854 | 480 | p | 480p
+640 | 480 | p | 480p
+640 | 360 | p | 360p
+352 | 288 | p | 288p
+320 | 240 | p | 240p
+2560 | 1440 | p | 1440p
+3840 | 2160 | p | 2160p
+3840 | 1600 | p | 2160p
+4096 | 2160 | p | 2160p
+7680 | 4320 | p | 4320p

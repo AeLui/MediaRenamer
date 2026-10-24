@@ -1,0 +1,52 @@
+# Season/episode detection reference cases (docs/MATCHING.md, section 2).
+# Format: mode | file name | expected
+#   mode: both (strict and lenient give the same result), lenient, strict
+#   expected: comma-separated SxE in order of appearance ("1x2" = season 1 episode 2, "?x12" = episode 12 without
+#   season, "0x1" = special 1), or "none"
+
+# single episode, common notations
+both | The.Show.S01E02.720p.HDTV.x264-GRP | 1x2
+both | the show s01e02 | 1x2
+both | The Show 1x02 Title | 1x2
+both | Show.S10E05 | 10x5
+both | Show (2019) S02E01 | 2x1
+both | Show Season 2 Episode 3 | 2x3
+both | Show Series 1 Part 2 | 1x2
+both | Show [s01]_[e02] | 1x2
+both | Show.s01.e02 | 1x2
+both | Show S01 E05 | 1x5
+both | Show S01EP05 | 1x5
+both | Show 01x05 | 1x5
+both | Show S1x05 | 1x5
+both | Show - 1x05 - Title (2012) | 1x5
+both | Show.Name.S01E05.720p.WEB-DL.DD5.1.H.264 | 1x5
+both | Show S01 - 02 | 1x2
+both | Show Season 1 - 02 | 1x2
+both | Show.S2010E01 | 2010x1
+
+# multi-episode files
+both | Show.S01E01E02.mkv | 1x1,1x2
+both | Show.S01E01-E03.mkv | 1x1,1x2,1x3
+both | Show.S01E01-03.mkv | 1x1,1x2,1x3
+both | Show.S01E01-02-03 | 1x1,1x2,1x3
+both | Show 1x01-1x02 | 1x1,1x2
+both | Show.2x05x06 | 2x5,2x6
+both | Show.S01E01.S01E02 | 1x1,1x2
+
+# episode without season, specials
+both | Show Ep 12 | ?x12
+both | Show E05 | ?x5
+both | Show Episode 7 | ?x7
+both | Documentary.3of6 | ?x3
+both | Show SP01 | 0x1
+both | Show SP01-02 | 0x1,0x2
+
+# ambiguous notations: only in lenient mode
+lenient | Show 102 Title | 1x2
+strict | Show 102 Title | none
+lenient | Show 1012 | 10x12
+
+# no episode at all
+both | Movie.Title.1080p.BluRay | none
+strict | Movie.2010.1080p.x264 | none
+strict | Some.Movie.2010.mkv | none

@@ -1,0 +1,35 @@
+# Expression format reference cases (docs/FORMAT.md, evaluation rules).
+# Evaluated with ExpressionFileFormat against a movie (name from the first column, year 2009) and the file
+# Avatar.2009.1080p.mkv. The binding "x" does not exist, so its block is always empty.
+# Format: movie name | expression | expected, or "error: <start of the FormatException message>"
+# Fields are separated by " | " exactly; the spaces inside a field are significant.
+
+Avatar | {n} ({y}) | Avatar (2009)
+Avatar | {n}{x} | Avatar
+Avatar | pre-{n}-post | pre-Avatar-post
+Avatar | {n}/{y} | Avatar/2009
+Avatar | {x}/{n} | Avatar
+Avatar | {x}{x}/{n}/{y} | Avatar/2009
+Avatar | ../Sorted/{n} | ../Sorted/Avatar
+Avatar | Z:\Movies\{n} ({y}) | Z:/Movies/Avatar (2009)
+Avatar | {'a{b}c'} | a{b}c
+Avatar | {'\u007B' + n} | {Avatar
+Avatar | a{1/0}b | ab
+Avatar | a{}b | ab
+Avatar | {y > 2000 ? 'new' : 'old'} | new
+Avatar | {n.toUpperCase()} | AVATAR
+Avatar | {n + '\n' + y} | Avatar2009
+Avatar |   {n}   | Avatar
+Avatar | {n}   {y} | Avatar 2009
+AC/DC: Live | {n} ({y}) | AC DC Live (2009)
+.. | {n}/{y} | 2009
+What If...? | {n} | What If
+What If...? | {n} - 1 | What If... - 1
+Avatar... | Movies/{n} ({y}) | Movies/Avatar... (2009)
+
+Avatar | {x} | error: Expression yields empty value
+Avatar | {n | error: SyntaxError: missing token: }
+Avatar | n} | error: SyntaxError: unexpected token: }
+Avatar | {n}} | error: SyntaxError: unexpected token: }
+Avatar | {'{'} | error: SyntaxError: missing token: }
+Avatar | {n.} | error: SyntaxError:

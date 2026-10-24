@@ -1,0 +1,29 @@
+# Build outputs (rebuildable with mvn -B package and scripts/build-exe.ps1)
+target/
+dist/
+*.class
+
+# Local tools: native MediaInfo/fpcalc copies for development
+lib/*.dll
+lib/*.exe
+
+# IDEs and local tool settings
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+.claude/settings.local.json
+
+# Logs, temporary and backup files
+*.log
+*.tmp
+*.bak
+*.orig
+*.wsb
+
+# Operating system files
+Thumbs.db
+desktop.ini
+.DS_Store

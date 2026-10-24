@@ -1,0 +1,4 @@
+moduleName=mediarenamer-format
+moduleVersion=0.1.0
+extensionClasses=com.mediarenamer.format.FormatMethods
+staticExtensionClasses=
