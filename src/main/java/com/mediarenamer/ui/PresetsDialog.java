@@ -5,7 +5,6 @@ import static com.mediarenamer.app.I18n.tr;
 import com.mediarenamer.rename.Mode;
 import com.mediarenamer.rename.Preset;
 import com.mediarenamer.rename.Presets;
-import com.mediarenamer.rename.RenameAction;
 import com.mediarenamer.web.Datasource;
 import com.mediarenamer.web.JellyfinClient;
 import com.mediarenamer.web.PlexClient;
@@ -21,6 +20,7 @@ import java.awt.Insets;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
@@ -45,7 +45,8 @@ import javax.swing.event.DocumentListener;
 /**
  * Profile management: create, edit and delete. Changes are kept per profile while moving between them (a modified
  * profile is shown in the "modified" color); Save stores all of them at once, and closing with unsaved changes asks
- * whether to save or discard them.
+ * whether to save or discard them. The media type (movies, series, music) filters the data sources and shows only the
+ * fields that make sense for it.
  */
 public class PresetsDialog extends JDialog {
 
@@ -58,11 +59,12 @@ public class PresetsDialog extends JDialog {
     final JList<Preset> list = new JList<>(model);
     final JTextField name = new JTextField(30);
     private final JTextField format = new JTextField(40);
-    private final JComboBox<String> database = new JComboBox<>();
-    private final JComboBox<String> order = new JComboBox<>();
-    private final JComboBox<String> matchMode = new JComboBox<>(new String[] { keepText, "Strict", "Opportunistic" });
+    /** Media type of the profile: decides the data sources offered and the fields shown. */
+    final JComboBox<Mode> type = new JComboBox<>(TYPES.toArray(Mode[]::new));
+    final JComboBox<String> database = new JComboBox<>();
+    final JComboBox<String> order = new JComboBox<>();
+    final JComboBox<String> matchMode = new JComboBox<>(new String[] { keepText, "Strict", "Opportunistic" });
     final LanguagePicker language = new LanguagePicker(keepText);
-    private final JComboBox<String> action = new JComboBox<>();
     private final JTextField output = new JTextField(32);
     private final JComboBox<String> jellyfin = new JComboBox<>(new String[] { keepText, yes, no });
     private final JComboBox<String> plex = new JComboBox<>(new String[] { keepText, yes, no });
@@ -74,20 +76,26 @@ public class PresetsDialog extends JDialog {
     private final Map<String, Preset> drafts = new LinkedHashMap<>();
     /** True while show() fills the form: those changes are not the user's. */
     private boolean loading;
+    /** Label of each form field, to hide both when the field does not apply to the media type. */
+    private final Map<JComponent, JLabel> labels = new HashMap<>();
+    /** Media type whose data sources are in the combo. */
+    private Mode shownType;
+
+    /** Media types a profile can have, in the combo's order. */
+    static final List<Mode> TYPES = List.of(Mode.Movie, Mode.Episode, Mode.Music);
 
     public PresetsDialog(JFrame owner) {
         super(owner, tr("rename.presets"), true);
-        database.addItem("file");
-        for (Datasource d : WebServices.all()) {
-            database.addItem(d.getIdentifier());
-        }
+        type.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> l, Object v, int i, boolean s, boolean f) {
+                return super.getListCellRendererComponent(l, v == null ? "" : tr("mode." + ((Mode) v).name()), i, s, f);
+            }
+        });
+        type.addActionListener(e -> typeChanged());
         order.addItem(keepText);
         for (SortOrder o : SortOrder.values()) {
             order.addItem(o.name());
-        }
-        action.addItem(keepText);
-        for (RenameAction a : RenameAction.values()) {
-            action.addItem(a.name());
         }
 
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -119,6 +127,8 @@ public class PresetsDialog extends JDialog {
         c.anchor = GridBagConstraints.WEST;
         int row = 0;
         row = row(form, c, row, tr("presets.name"), name);
+        row = row(form, c, row, tr("presets.type"), type);
+        row = row(form, c, row, tr("presets.database"), database);
         output.putClientProperty("JTextField.placeholderText", tr("presets.folder.placeholder"));
         row = row(form, c, row, tr("presets.folder"), folderField(this, output));
         format.putClientProperty("JTextField.placeholderText", "{ny}/{n} - {sxe} - {t}");
@@ -128,12 +138,10 @@ public class PresetsDialog extends JDialog {
         c.gridx = 1;
         c.gridy = row++;
         form.add(hint, c);
-        row = row(form, c, row, tr("presets.database"), database);
         row = row(form, c, row, tr("episode.order"), order);
         row = row(form, c, row, tr("match.mode"), matchMode);
         // empty = do not change the language, shown as "(don't change)" like in the combos; typing searches the list
         row = row(form, c, row, tr("presets.language"), language);
-        row = row(form, c, row, tr("rename.action"), action);
         // the preset option takes precedence over the Preferences one; it can only be changed with Jellyfin configured
         row = row(form, c, row, tr("jellyfin.scan"), jellyfin);
         boolean jellyfinReady = JellyfinClient.isConfigured();
@@ -159,7 +167,10 @@ public class PresetsDialog extends JDialog {
         JPanel content = new JPanel(new BorderLayout(8, 8));
         content.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         content.add(listScroll, BorderLayout.WEST);
-        content.add(form, BorderLayout.CENTER);
+        // at the top: hiding the rows of another media type does not move the others
+        JPanel formTop = new JPanel(new BorderLayout());
+        formTop.add(form, BorderLayout.NORTH);
+        content.add(formTop, BorderLayout.CENTER);
         content.add(buttons, BorderLayout.SOUTH);
         add(content);
         // Close, Escape and the window's X ask first when there are unsaved changes
@@ -173,21 +184,25 @@ public class PresetsDialog extends JDialog {
         getRootPane().registerKeyboardAction(e -> close(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         reload();
+        // sized with every row visible (series), so a type with more rows fits after switching
+        applyType(Mode.Episode);
+        pack();
         if (model.isEmpty()) {
             addNew();
         } else {
             list.setSelectedIndex(0);
         }
-        pack();
         setLocationRelativeTo(owner);
     }
 
-    private static int row(JPanel form, GridBagConstraints c, int row, String label, JComponent field) {
+    private int row(JPanel form, GridBagConstraints c, int row, String label, JComponent field) {
         c.gridx = 0;
         c.gridy = row;
         c.fill = GridBagConstraints.NONE;
         c.weightx = 0;
-        form.add(new JLabel(label), c);
+        JLabel l = new JLabel(label);
+        labels.put(field, l);
+        form.add(l, c);
         c.gridx = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 1;
@@ -232,6 +247,71 @@ public class PresetsDialog extends JDialog {
         return p;
     }
 
+    /** Data sources offered for a media type (identifiers, in menu order). */
+    static List<String> sourcesFor(Mode type) {
+        return type.getDatasources().stream().map(Datasource::getIdentifier).toList();
+    }
+
+    /** Media type of a profile: the one of its data source (old "file" profiles and unknown sources: movies). */
+    static Mode typeOf(Preset p) {
+        Mode m = p == null ? Mode.Movie : p.getMode();
+        return TYPES.contains(m) ? m : Mode.Movie;
+    }
+
+    /** True if the field applies to the media type: episode order only for series; matching mode and language not for music. */
+    static boolean applies(Mode type, String field) {
+        return switch (field) {
+            case "order" -> type == Mode.Episode;
+            case "matchMode", "language" -> type != Mode.Music;
+            default -> true;
+        };
+    }
+
+    /** The user chose another type: its sources, its default format if the format was the previous type's, its fields. */
+    private void typeChanged() {
+        Mode t = (Mode) type.getSelectedItem();
+        if (loading || t == null || t == shownType) {
+            return;
+        }
+        Mode previous = shownType;
+        String f = format.getText().trim();
+        applyType(t);
+        database.setSelectedItem(t.getDefaultDatasource().getIdentifier());
+        if (f.isEmpty() || previous != null && (f.equals(previous.getFormat()) || f.equals(previous.getDefaultFormat()))) {
+            format.setText(t.getFormat());
+        }
+        formChanged();
+    }
+
+    /** Fills the source combo with the type's sources and shows only the fields that apply to it (the hidden ones are cleared). */
+    private void applyType(Mode t) {
+        shownType = t;
+        boolean wasLoading = loading;
+        loading = true;
+        try {
+            database.removeAllItems();
+            sourcesFor(t).forEach(database::addItem);
+            setApplies(order, applies(t, "order"));
+            setApplies(matchMode, applies(t, "matchMode"));
+            setApplies(language, applies(t, "language"));
+            format.putClientProperty("JTextField.placeholderText", t.getDefaultFormat());
+        } finally {
+            loading = wasLoading;
+        }
+    }
+
+    private void setApplies(JComponent field, boolean applies) {
+        field.setVisible(applies);
+        labels.get(field).setVisible(applies);
+        if (!applies) {
+            if (field instanceof JComboBox<?> box) {
+                box.setSelectedItem(keepText);
+            } else if (field == language) {
+                language.setTag(null);
+            }
+        }
+    }
+
     /** Mode of a data source name (the "file" entry and unknown names: File mode). */
     static Mode modeOf(String database) {
         Datasource d = database == null || database.equalsIgnoreCase("file") ? null : WebServices.get(database);
@@ -265,7 +345,7 @@ public class PresetsDialog extends JDialog {
         for (JTextField f : new JTextField[] { name, format, output }) {
             f.getDocument().addDocumentListener(doc);
         }
-        for (JComboBox<?> box : new JComboBox<?>[] { database, order, matchMode, action, jellyfin, plex }) {
+        for (JComboBox<?> box : new JComboBox<?>[] { database, order, matchMode, jellyfin, plex }) {
             box.addActionListener(e -> formChanged());
         }
         language.onChange(this::formChanged);
@@ -286,8 +366,10 @@ public class PresetsDialog extends JDialog {
 
     /** The form as a profile, with the id of the entry being edited. */
     private Preset formPreset() {
-        return new Preset(editing.id(), name.getText().trim(), format.getText().trim(), (String) database.getSelectedItem(), keep(order), keep(matchMode),
-                language.getTag(), keep(action), output.getText().trim().isEmpty() ? null : output.getText().trim(), scanOption(jellyfin), scanOption(plex));
+        Mode t = (Mode) type.getSelectedItem();
+        return new Preset(editing.id(), name.getText().trim(), format.getText().trim(), (String) database.getSelectedItem(),
+                applies(t, "order") ? keep(order) : null, applies(t, "matchMode") ? keep(matchMode) : null, applies(t, "language") ? language.getTag() : null,
+                output.getText().trim().isEmpty() ? null : output.getText().trim(), scanOption(jellyfin), scanOption(plex));
     }
 
     private void reload() {
@@ -303,11 +385,15 @@ public class PresetsDialog extends JDialog {
         try {
             name.setText(p == null ? "" : p.name());
             format.setText(p == null ? "" : p.format());
-            database.setSelectedItem(p == null || p.database() == null ? "TheMovieDB" : p.database());
+            Mode t = typeOf(p);
+            type.setSelectedItem(t);
+            applyType(t);
+            Datasource d = p == null ? null : p.getDatasource();
+            // a source that no longer exists (or the old "file" one) shows the type's first source
+            database.setSelectedItem(d == null ? sourcesFor(t).get(0) : d.getIdentifier());
             order.setSelectedItem(p == null || p.sortOrder() == null ? keepText : p.sortOrder());
             matchMode.setSelectedItem(p == null || p.matchMode() == null ? keepText : p.matchMode());
             language.setTag(p == null ? null : p.language());
-            action.setSelectedItem(p == null || p.action() == null ? keepText : p.action());
             output.setText(p == null || p.outputFolder() == null ? "" : p.outputFolder());
             jellyfin.setSelectedItem(p == null || p.jellyfinScan() == null ? keepText : p.jellyfinScan() ? yes : no);
             plex.setSelectedItem(p == null || p.plexScan() == null ? keepText : p.plexScan() ? yes : no);
@@ -318,14 +404,14 @@ public class PresetsDialog extends JDialog {
             // the first time an entry is shown its form is the reference: later differences are unsaved changes
             baseline.putIfAbsent(entry.id(), formPreset());
         }
-        for (JComponent f : new JComponent[] { name, format, database, order, matchMode, language, action, output }) {
+        for (JComponent f : new JComponent[] { name, type, format, database, order, matchMode, language, output }) {
             f.setEnabled(entry != null);
         }
     }
 
     /** New profile (not saved until Save), with the current Movie format. */
     private void addNew() {
-        Preset p = new Preset(null, "", Mode.Movie.getFormat(), "TheMovieDB", null, null, null, null);
+        Preset p = new Preset(null, "", Mode.Movie.getFormat(), "TheMovieDB", null, null, null);
         model.addElement(p);
         list.setSelectedValue(p, true);
         name.requestFocusInWindow();

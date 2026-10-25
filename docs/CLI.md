@@ -20,10 +20,10 @@ java -jar MediaRenamer.jar -profiles
 
 ## Profiles
 
-`--profile "<name or id>"` fills `--db`, `--format`, `--output` (the profile's folder), `--order`, `--lang`, `--action` and the
+`--profile "<name or id>"` fills `--db`, `--format`, `--output` (the profile's folder), `--order`, `--lang` and the
 matching mode with the profile's values; **options you pass explicitly take precedence**
 (e.g. `--profile "Movies for Plex" --action test`). If the profile is *Opportunistic*, strict mode can be forced
-with `-strict`.
+with `-strict`. Profiles do not set the action (since 2.5): it is `--action` or its default.
 
 - `-profiles` lists the saved profiles.
 - Profiles were called *presets* up to 2.0: `--preset` and `-presets` still work as aliases.
@@ -36,7 +36,7 @@ java -jar MediaRenamer.jar -rename "D:/Downloads" -r --profile "TV Shows for Ple
 
 | Option | Values | Default |
 |---|---|---|
-| `--db` | `TheMovieDB`, `TheMovieDB::TV`, `TheTVDB`, `AniDB`, `OMDb`, `AcoustID`, `ID3`, `file` (aliases: `tmdb`, `tvdb`, `tv`, `movie`, `anime`, `music`, `tags`...; `tvmaze`, a source removed in 2.1, means `TheMovieDB::TV`) | guessed: music → ID3, mostly SxE → TheMovieDB::TV, otherwise TheMovieDB |
+| `--db` | `TheMovieDB`, `TheMovieDB::TV`, `TheTVDB`, `AniDB`, `AcoustID`, `ID3`, `file` (aliases: `tmdb`, `tvdb`, `tv`, `movie`, `anime`, `music`, `tags`...; `tvmaze`, a source removed in 2.1, means `TheMovieDB::TV`; `omdb`/`imdb`, removed in 2.5, mean `TheMovieDB`) | guessed: music → ID3, mostly SxE → TheMovieDB::TV, otherwise TheMovieDB |
 | `--format` | format expression | the saved format of the mode |
 | `--action` | `move`, `copy`, `keeplink`, `symlink`, `test` (`hardlink`, `clone` and `duplicate`, removed in 2.1, mean `copy`) | `move` |
 | `--conflict` | `skip`, `override`, `best` (= `auto`), `worst`, `largest`, `smallest`, `ask`, `index`, `fail` (see below) | `skip` |

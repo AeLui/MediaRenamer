@@ -3,7 +3,7 @@ package com.mediarenamer.web;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-/** Request limiter: at most N requests per time window (AniDB, OMDb, TMDb). */
+/** Request limiter: at most N requests per time window (AniDB, TMDb). */
 public class FloodLimit {
 
     private final int permits;

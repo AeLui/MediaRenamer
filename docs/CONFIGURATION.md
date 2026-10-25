@@ -12,7 +12,7 @@ which take precedence over the file.
 
 ### Encrypted API keys
 
-Since v0.7 the API keys (`apikey.tmdb`, `apikey.tvdb`, `apikey.tvdb.pin`, `apikey.omdb`, `apikey.acoustid`,
+Since v0.7 the API keys (`apikey.tmdb`, `apikey.tvdb`, `apikey.tvdb.pin`, `apikey.acoustid`,
 `jellyfin.apikey` and, since v2.3, `plex.token`) are stored **encrypted** in the file:
 
 - **Windows**: user DPAPI (`CryptProtectData`), value `dpapi:…`. Only your Windows user on this machine
@@ -34,7 +34,6 @@ Since v0.7 the API keys (`apikey.tmdb`, `apikey.tvdb`, `apikey.tvdb.pin`, `apike
 | `apikey.tmdb` | `MEDIARENAMER_APIKEY_TMDB` | TheMovieDB (API key v3 or token v4) |
 | `apikey.tvdb` | `MEDIARENAMER_APIKEY_TVDB` | TheTVDB v4 |
 | `apikey.tvdb.pin` | `MEDIARENAMER_APIKEY_TVDB_PIN` | TheTVDB subscriber PIN (optional, depending on your key type) |
-| `apikey.omdb` | `MEDIARENAMER_APIKEY_OMDB` | OMDb |
 | `apikey.acoustid` | `MEDIARENAMER_APIKEY_ACOUSTID` | AcoustID |
 | `apikey.anidb.client` | `MEDIARENAMER_APIKEY_ANIDB_CLIENT` | Name of the HTTP client registered at AniDB |
 | `apikey.anidb.clientver` | `MEDIARENAMER_APIKEY_ANIDB_CLIENTVER` | AniDB client version (default 1) |
@@ -75,7 +74,6 @@ the data sources, of the orders (`Airdate`, `DVD`...) and the CLI options are no
 |---|---|---|
 | TheMovieDB | https://www.themoviedb.org/settings/api | free (personal use) |
 | TheTVDB | https://thetvdb.com/api-information | free with attribution / paid depending on use |
-| OMDb | https://www.omdbapi.com/apikey.aspx | free (1,000 requests/day) |
 | AcoustID | https://acoustid.org/new-application | free |
 | AniDB | https://anidb.net/software/add (register an HTTP client) | free, very limited use |
 
@@ -181,7 +179,7 @@ then the combined trust is not installed.
 |---|---|
 | `%APPDATA%\MediaRenamer\settings.properties` | Preferences |
 | `%APPDATA%\MediaRenamer\history.xml` | History (for `{original}` and *Revert*) |
-| `%APPDATA%\MediaRenamer\presets.json` | Profiles (JSON list: `id`, `name`, `format`, `database`, `sortOrder`, `matchMode`, `language`, `action`, `outputFolder`, `jellyfinScan` and `plexScan`: `true`/`false`, absent = general preference) |
+| `%APPDATA%\MediaRenamer\presets.json` | Profiles (JSON list: `id`, `name`, `format`, `database`, `sortOrder`, `matchMode`, `language`, `outputFolder`, `jellyfinScan` and `plexScan`: `true`/`false`, absent = general preference). The media type is the one of `database`; an `action` field from before 2.5 is ignored |
 | `secret.key` | Linux/macOS only: AES key to encrypt the API keys (does not exist on Windows: DPAPI is used) |
 | `%APPDATA%\MediaRenamer\cache\` | Cached HTTP responses (safe to delete). Responses older than 31 days (the longest expiry) are removed in the background at every start |
 | `%APPDATA%\FileRenamer\` | Data of FileRenamer (up to 1.1.1): copied once, then never read or modified again |

@@ -17,9 +17,9 @@ import org.junit.jupiter.api.io.TempDir;
 class PresetsTest {
 
     private static final Preset MOVIES = new Preset("1739994159", "Películas para Plex", "{n.colon(' - ')} ({y}){subt}", "TheMovieDB", null,
-            "Opportunistic", "es", "MOVE", "Z:\\Películas");
+            "Opportunistic", "es", "Z:\\Películas");
     private static final Preset SERIES = new Preset("1739994260", "Series para Plex", "{ny}/{n} - {sxe} - {t}", "TheMovieDB::TV", "Airdate",
-            "Opportunistic", "es", "MOVE");
+            "Opportunistic", "es");
 
     @Test
     void presetProperties() {
@@ -27,7 +27,6 @@ class PresetsTest {
         assertEquals(Mode.Movie, MOVIES.getMode());
         assertEquals(Boolean.FALSE, MOVIES.isStrict());
         assertEquals(Locale.forLanguageTag("es"), MOVIES.getLocale());
-        assertEquals(RenameAction.MOVE, MOVIES.getAction());
         assertEquals(WebServices.TheMovieDB_TV, SERIES.getDatasource());
         assertEquals(Mode.Episode, SERIES.getMode());
         assertEquals(SortOrder.Airdate, SERIES.getSortOrder());
@@ -50,11 +49,21 @@ class PresetsTest {
     }
 
     @Test
+    void oldActionAndOmdbAreDroppedOnLoad(@TempDir Path dir) throws java.io.IOException {
+        Path file = dir.resolve("presets.json");
+        java.nio.file.Files.writeString(file, "[{\"@type\":\"Preset\",\"id\":\"7\",\"name\":\"Old\",\"format\":\"{n}\",\"database\":\"OMDb\",\"action\":\"MOVE\"}]");
+        Preset p = new Presets(file).find("Old").orElseThrow();
+        assertEquals(WebServices.TheMovieDB, p.getDatasource(), "OMDb profiles switch to TheMovieDB");
+        assertEquals(Mode.Movie, p.getMode());
+        assertFalse(p.toJson().containsKey("action"), "the rename action is no longer part of a profile");
+    }
+
+    @Test
     void jellyfinScanIsOptional(@TempDir Path dir) {
         Path file = dir.resolve("presets.json");
         Presets store = new Presets(file);
-        store.put(new Preset("1", "With scan", "{n}", "TheMovieDB", null, null, null, null, null, true, null));
-        store.put(new Preset("2", "Without scan", "{n}", "TheMovieDB", null, null, null, null, null, false, null));
+        store.put(new Preset("1", "With scan", "{n}", "TheMovieDB", null, null, null, null, true, null));
+        store.put(new Preset("2", "Without scan", "{n}", "TheMovieDB", null, null, null, null, false, null));
         store.put(SERIES);
         Presets reloaded = new Presets(file);
         assertEquals(Boolean.TRUE, reloaded.find("With scan").orElseThrow().jellyfinScan());
@@ -67,7 +76,7 @@ class PresetsTest {
     void plexScanIsOptionalAndIndependent(@TempDir Path dir) {
         Path file = dir.resolve("presets.json");
         Presets store = new Presets(file);
-        store.put(new Preset("1", "Plex only", "{n}", "TheMovieDB", null, null, null, null, null, false, true));
+        store.put(new Preset("1", "Plex only", "{n}", "TheMovieDB", null, null, null, null, false, true));
         store.put(SERIES);
         Presets reloaded = new Presets(file);
         Preset p = reloaded.find("Plex only").orElseThrow();

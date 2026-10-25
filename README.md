@@ -4,7 +4,7 @@
 
 ![Main window](docs/img/screenshot-main.png)
 
-Renames series, movies and music with data from online databases (TheMovieDB, TheTVDB, AniDB, OMDb…)
+Renames series, movies and music with data from online databases (TheMovieDB, TheTVDB, AniDB…)
 and a format language of Groovy expressions (`{n} - {s00e00} - {t}`). Windows desktop application with a
 command line.
 
@@ -15,7 +15,7 @@ command line.
 ## What it does
 
 - **Modes**: Episodes, Movies, Music and generic File.
-- **Data sources**: TheMovieDB (movies and TV), TheTVDB v4, AniDB, OMDb, AcoustID,
+- **Data sources**: TheMovieDB (movies and TV), TheTVDB v4, AniDB, AcoustID,
   ID3 tags (via MediaInfo), with AnimeLists and TheXEM anime mappings.
 - **Detection**: series/movie name, year, `S01E02`/`1x02`/multi-episode/specials, dates,
   absolute numbering, season from the folder, "release info" cleanup (quality, codec, group, language) that keeps
@@ -57,7 +57,7 @@ command line.
   for and a button to get the key) and the media servers (Jellyfin, Plex). See [docs/USAGE.md](docs/USAGE.md#first-run-setup-wizard).
 - **About MediaRenamer** (ⓘ button in the header, or click the version in the status bar): version, author, credits
   and **Third-party licenses** (the license notices of the bundled libraries and Java runtime).
-- **Poster search**: TMDb/TheTVDB/OMDb results show poster, year, original title and
+- **Poster search**: TMDb/TheTVDB results show poster, year, original title and
   overview; on mouse hover a card shows director/creators, cast, genres, runtime, rating…
 
 | Search | Card on mouse hover | Dark theme |
@@ -96,7 +96,7 @@ mvn -B package
 java -jar target/MediaRenamer.jar
 ```
 
-Before using TheMovieDB/TheTVDB/OMDb/AcoustID/AniDB, set your API keys in *Preferences*
+Before using TheMovieDB/TheTVDB/AcoustID/AniDB, set your API keys in *Preferences*
 (see [docs/CONFIGURATION.md](docs/CONFIGURATION.md)). **ID3** tags and **File** mode work without a key.
 
 CLI example (test mode, does not touch the disk):
@@ -123,6 +123,6 @@ java -jar target/MediaRenamer.jar -rename "D:/Downloads" -r --db TheMovieDB::TV 
 ## Legal notice
 
 MediaRenamer is for personal use. It ships no API keys: each user configures their own credentials.
-Respect the terms of use of each service (TMDb, TheTVDB, AniDB, OMDb, AcoustID).
+Respect the terms of use of each service (TMDb, TheTVDB, AniDB, AcoustID).
 Third-party components and their licenses: [docs/THIRD_PARTY.md](docs/THIRD_PARTY.md) and
 [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt).

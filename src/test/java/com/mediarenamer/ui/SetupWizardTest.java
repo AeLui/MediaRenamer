@@ -39,7 +39,7 @@ class SetupWizardTest {
             keys.add(api.settingsKey());
         }
         // every API key of the preferences is offered in the wizard
-        assertEquals(Set.of(Settings.TMDB_KEY, Settings.TVDB_KEY, Settings.TVDB_PIN, Settings.OMDB_KEY, Settings.ACOUSTID_KEY,
+        assertEquals(Set.of(Settings.TMDB_KEY, Settings.TVDB_KEY, Settings.TVDB_PIN, Settings.ACOUSTID_KEY,
                 Settings.ANIDB_CLIENT, Settings.ANIDB_CLIENT_VERSION), keys);
     }
 

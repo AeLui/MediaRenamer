@@ -62,7 +62,7 @@ com.mediarenamer
 - Model: `SearchResult`, `Series`, `Movie`, `SeriesInfo`, `Episode`, `MultiEpisode`, `AudioTrack`,
   `MovieInfo`, `SimpleDate`, `SortOrder`, `EpisodeFormat`.
 - Clients: `TMDbMovieClient`, `TMDbTVClient` (base `TMDbClient`), `TheTVDBClient` (v4),
-  `AniDBClient`, `OMDbClient`, `AcoustIDClient`, `ID3Lookup`; mappings `AnimeLists`, `XEM`.
+  `AniDBClient`, `AcoustIDClient`, `ID3Lookup`; mappings `AnimeLists`, `XEM`.
 - Media servers: `JellyfinClient`:
   `POST /Library/Refresh` after renaming and `GET /System/Info` for *Test connection*. `PlexClient`:
   `GET /library/sections` + `GET /library/sections/{key}/refresh` after renaming, `GET /` for *Test connection*, and

@@ -28,7 +28,6 @@ public final class Settings {
     public static final String TMDB_KEY = "apikey.tmdb";
     public static final String TVDB_KEY = "apikey.tvdb";
     public static final String TVDB_PIN = "apikey.tvdb.pin";
-    public static final String OMDB_KEY = "apikey.omdb";
     public static final String ACOUSTID_KEY = "apikey.acoustid";
     public static final String ANIDB_CLIENT = "apikey.anidb.client";
     public static final String ANIDB_CLIENT_VERSION = "apikey.anidb.clientver";
@@ -71,8 +70,11 @@ public final class Settings {
     public static final String PLEX_CLIENT_ID = "plex.clientid";
 
     /** Keys stored encrypted in the file (environment variables and -D stay in plain text). */
-    public static final java.util.Set<String> SECRET_KEYS = java.util.Set.of(TMDB_KEY, TVDB_KEY, TVDB_PIN, OMDB_KEY, ACOUSTID_KEY, JELLYFIN_KEY,
+    public static final java.util.Set<String> SECRET_KEYS = java.util.Set.of(TMDB_KEY, TVDB_KEY, TVDB_PIN, ACOUSTID_KEY, JELLYFIN_KEY,
             PLEX_TOKEN);
+
+    /** Keys of removed features (the OMDb API key, source removed in 2.5): deleted so no stale secret stays on disk. */
+    static final java.util.Set<String> OBSOLETE_KEYS = java.util.Set.of("apikey.omdb");
 
     // External tools
     public static final String MEDIAINFO_PATH = "tool.mediainfo";
@@ -110,7 +112,14 @@ public final class Settings {
                 Logging.warn(I18n.tr("log.readFailed", file, e));
             }
         }
+        removeObsoleteKeys();
         migrateSecrets();
+    }
+
+    private void removeObsoleteKeys() {
+        if (props.keySet().removeIf(OBSOLETE_KEYS::contains)) {
+            save();
+        }
     }
 
     /**

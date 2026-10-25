@@ -46,8 +46,8 @@ class SaveSafetyTest {
     @Test
     void presetsCreatedInTheSameSecondDoNotReplaceEachOther(@TempDir Path dir) {
         Presets store = new Presets(dir.resolve("presets.json"));
-        Preset a = new Preset(null, "A", "{n}", "TheMovieDB", null, null, null, null);
-        Preset b = new Preset(null, "B", "{n}", "TheMovieDB", null, null, null, null);
+        Preset a = new Preset(null, "A", "{n}", "TheMovieDB", null, null, null);
+        Preset b = new Preset(null, "B", "{n}", "TheMovieDB", null, null, null);
         assertNotEquals(a.id(), b.id());
         store.put(a);
         store.put(b);

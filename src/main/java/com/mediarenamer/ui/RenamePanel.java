@@ -835,7 +835,7 @@ public class RenamePanel extends JPanel {
         return m;
     }
 
-    /** Applies the preset (format, order, mode, language, action) and starts the search with its source. */
+    /** Applies the preset (format, order, mode, language) and starts the search with its source. */
     void applyPreset(Preset p) {
         Mode mode = p.getMode();
         mode.setFormat(p.format());
@@ -849,9 +849,6 @@ public class RenamePanel extends JPanel {
         }
         if (p.getLocale() != null) {
             Settings.get().put(Settings.LANGUAGE, p.language());
-        }
-        if (p.getAction() != null) {
-            actionBox.setSelectedItem(p.getAction());
         }
         Datasource d = p.getDatasource();
         if (d != null) {

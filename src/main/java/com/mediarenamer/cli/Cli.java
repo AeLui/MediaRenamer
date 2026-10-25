@@ -212,7 +212,7 @@ public final class Cli {
 
     /**
      * --profile: fills the options not given explicitly (--db, --format, --order,
-     * --lang, --action and the matching mode) with the preset's values.
+     * --lang and the matching mode) with the preset's values.
      */
     static boolean applyPreset(Args a) {
         Preset p = Presets.get().find(a.get("--profile")).orElse(null);
@@ -232,9 +232,6 @@ public final class Cli {
         if (p.language() != null) {
             a.options.putIfAbsent("--lang", p.language());
         }
-        if (p.action() != null) {
-            a.options.putIfAbsent("--action", p.action());
-        }
         if (Boolean.FALSE.equals(p.isStrict()) && !a.flags.contains("-strict")) {
             a.flags.add("-non-strict");
         }
@@ -249,7 +246,7 @@ public final class Cli {
         for (Preset p : list) {
             System.out.println(p.name());
             System.out.println("  " + tr("cli.preset.format", p.format()));
-            System.out.println("  " + tr("cli.preset.details", p.database() == null ? "file" : p.database(), p.sortOrder(), p.matchMode(), p.language(), p.action()));
+            System.out.println("  " + tr("cli.preset.details", p.database() == null ? "file" : p.database(), p.sortOrder(), p.matchMode(), p.language()));
         }
         return 0;
     }

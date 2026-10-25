@@ -11,7 +11,6 @@ public final class WebServices {
     public static final AniDBClient AniDB = new AniDBClient();
 
     public static final TMDbMovieClient TheMovieDB = new TMDbMovieClient();
-    public static final OMDbClient OMDb = new OMDbClient();
 
     public static final AcoustIDClient AcoustID = new AcoustIDClient();
     public static final ID3Lookup ID3 = new ID3Lookup();
@@ -25,7 +24,7 @@ public final class WebServices {
     }
 
     public static List<MovieLookupService> getMovieLookupServices() {
-        return List.of(TheMovieDB, OMDb);
+        return List.of(TheMovieDB);
     }
 
     public static List<MusicLookupService> getMusicLookupServices() {
@@ -48,7 +47,8 @@ public final class WebServices {
         }
         String n = id.trim().toLowerCase();
         switch (n) {
-            case "tmdb", "themoviedb", "movie" -> {
+            // "omdb"/"imdb": source removed in 2.5; profiles and preferences that used it switch to TheMovieDB
+            case "tmdb", "themoviedb", "movie", "omdb", "imdb" -> {
                 return TheMovieDB;
             }
             // "tvmaze": source removed in 2.1; profiles that used it switch to TheMovieDB::TV
@@ -60,9 +60,6 @@ public final class WebServices {
             }
             case "anidb", "anime" -> {
                 return AniDB;
-            }
-            case "omdb", "imdb" -> {
-                return OMDb;
             }
             case "acoustid", "music" -> {
                 return AcoustID;

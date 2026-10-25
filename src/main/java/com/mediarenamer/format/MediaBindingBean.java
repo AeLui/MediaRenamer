@@ -12,7 +12,6 @@ import com.mediarenamer.web.Episode;
 import com.mediarenamer.web.EpisodeFormat;
 import com.mediarenamer.web.Movie;
 import com.mediarenamer.web.MovieInfo;
-import com.mediarenamer.web.MovieLookupService;
 import com.mediarenamer.web.MultiEpisode;
 import com.mediarenamer.web.SeriesInfo;
 import com.mediarenamer.web.SimpleDate;
@@ -473,28 +472,13 @@ public class MediaBindingBean {
         return y == null ? null : (y / 10 * 10) + "s";
     }
 
-    /** {omdb}: OMDb data for the movie (requires apikey.omdb). */
-    @Define("omdb")
-    public MovieInfo getOmdb() throws Exception {
-        Movie m = getMovie();
-        if (m == null) {
-            return null;
-        }
-        int imdb = m.getImdbId();
-        if (imdb <= 0 && getImdbId() != null) {
-            imdb = Integer.parseInt(getImdbId().replaceAll("\\D", ""));
-        }
-        return imdb <= 0 ? null : WebServices.OMDb.getMovieInfo(new Movie(m.getName(), null, m.getYear(), imdb, 0, null), Settings.get().getLocale());
-    }
-
     private MovieInfo getMovieInfo() {
         if (!movieInfoLoaded) {
             movieInfoLoaded = true;
             Movie m = getMovie();
             if (m != null) {
                 try {
-                    MovieLookupService db = m.getTmdbId() > 0 ? WebServices.TheMovieDB : WebServices.OMDb;
-                    movieInfo = db.getMovieInfo(m, m.getLanguage() != null ? m.getLanguage() : Settings.get().getLocale());
+                    movieInfo = WebServices.TheMovieDB.getMovieInfo(m, m.getLanguage() != null ? m.getLanguage() : Settings.get().getLocale());
                 } catch (Exception e) {
                     Logging.debug("MovieInfo: " + e.getMessage());
                 }

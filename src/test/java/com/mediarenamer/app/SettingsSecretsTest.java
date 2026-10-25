@@ -75,8 +75,18 @@ class SettingsSecretsTest {
     @Test
     void undecryptableValueIsIgnored(@TempDir Path dir) throws IOException {
         Path file = dir.resolve("settings.properties");
-        Files.writeString(file, "apikey.omdb=" + Secrets.DPAPI + "AAAA\n");
-        assertNull(new Settings(file).get(Settings.OMDB_KEY));
+        Files.writeString(file, "apikey.acoustid=" + Secrets.DPAPI + "AAAA\n");
+        assertNull(new Settings(file).get(Settings.ACOUSTID_KEY));
+    }
+
+    @Test
+    void obsoleteOmdbKeyIsRemovedFromTheFile(@TempDir Path dir) throws IOException {
+        Path file = dir.resolve("settings.properties");
+        Files.writeString(file, "apikey.omdb=" + Secrets.DPAPI + "AAAA\nlanguage=es\n");
+        Settings s = new Settings(file);
+        assertNull(s.get("apikey.omdb"));
+        assertEquals("es", s.get("language"));
+        assertFalse(Files.readString(file).contains("apikey.omdb"), "the stale secret does not stay on disk");
     }
 
     @Test

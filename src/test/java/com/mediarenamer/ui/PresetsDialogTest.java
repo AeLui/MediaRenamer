@@ -23,8 +23,8 @@ import org.junit.jupiter.api.Test;
 /** Profiles: unsaved changes survive switching profile, are marked, and Save stores all of them at once. */
 class PresetsDialogTest {
 
-    private final Preset a = new Preset(null, "Test A", "{n} ({y})", "TheMovieDB", null, null, "es-ES", null);
-    private final Preset b = new Preset(null, "Test B", "{n} - {s00e00} - {t}", "TheMovieDB::TV", null, null, null, null);
+    private final Preset a = new Preset(null, "Test A", "{n} ({y})", "TheMovieDB", null, null, "es-ES");
+    private final Preset b = new Preset(null, "Test B", "{n} - {s00e00} - {t}", "TheMovieDB::TV", null, null, null);
 
     @BeforeEach
     void setUp() {
@@ -82,6 +82,59 @@ class PresetsDialogTest {
                 assertTrue(d.hasUnsavedChanges());
                 d.name.setText("Test B");
                 assertFalse(d.hasUnsavedChanges(), "back to the saved value");
+            } finally {
+                d.dispose();
+            }
+        });
+    }
+
+    @Test
+    void mediaTypeFiltersSourcesAndFields() {
+        assertEquals(List.of(Mode.Movie, Mode.Episode, Mode.Music), PresetsDialog.TYPES);
+        assertEquals(List.of("TheMovieDB"), PresetsDialog.sourcesFor(Mode.Movie));
+        assertEquals(List.of("TheMovieDB::TV", "TheTVDB", "AniDB"), PresetsDialog.sourcesFor(Mode.Episode));
+        assertEquals(List.of("ID3", "AcoustID"), PresetsDialog.sourcesFor(Mode.Music));
+        assertTrue(PresetsDialog.applies(Mode.Episode, "order"));
+        assertFalse(PresetsDialog.applies(Mode.Movie, "order"));
+        assertTrue(PresetsDialog.applies(Mode.Movie, "language"));
+        assertFalse(PresetsDialog.applies(Mode.Music, "matchMode"));
+        assertFalse(PresetsDialog.applies(Mode.Music, "language"));
+        // old "file" profiles open as movies
+        assertEquals(Mode.Movie, PresetsDialog.typeOf(new Preset(null, "F", "{fn}", "file", null, null, null)));
+        assertEquals(Mode.Episode, PresetsDialog.typeOf(b));
+    }
+
+    @Test
+    void switchingTypeOffersItsSourcesAndHidesFieldsThatDoNotApply() throws Exception {
+        assumeFalse(GraphicsEnvironment.isHeadless());
+        SwingUtilities.invokeAndWait(() -> {
+            PresetsDialog d = new PresetsDialog(null);
+            try {
+                d.list.setSelectedIndex(1);
+                assertEquals(Mode.Episode, d.type.getSelectedItem());
+                assertEquals("TheMovieDB::TV", d.database.getSelectedItem());
+                assertTrue(d.order.isVisible());
+                assertEquals(3, d.database.getItemCount());
+
+                d.type.setSelectedItem(Mode.Music);
+                assertEquals(2, d.database.getItemCount());
+                assertTrue(List.of("ID3", "AcoustID").contains(d.database.getSelectedItem()));
+                assertFalse(d.order.isVisible());
+                assertFalse(d.matchMode.isVisible());
+                assertFalse(d.language.isVisible());
+                assertTrue(d.hasUnsavedChanges());
+
+                d.list.setSelectedIndex(0);
+                assertEquals(Mode.Movie, d.type.getSelectedItem());
+                assertEquals(1, d.database.getItemCount());
+                assertFalse(d.order.isVisible(), "no episode order for movies");
+                assertTrue(d.language.isVisible());
+                assertEquals("es-ES", d.language.getTag());
+
+                assertTrue(d.save());
+                Preset music = Presets.get().list().stream().filter(p -> p.name().equals("Test B")).findFirst().orElseThrow();
+                assertEquals(Mode.Music, music.getMode());
+                assertEquals(null, music.language());
             } finally {
                 d.dispose();
             }

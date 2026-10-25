@@ -91,7 +91,6 @@ Status of each variable (a getter annotated with `@Define` in `MediaBindingBean`
 | `genres`, `genre`, `rating`, `votes`, `certification` | ✅ | |
 | `collection`, `director`, `actors`, `runtime`, `country` | ✅ | |
 | `language`, `languages` | ✅ | Original language / spoken languages |
-| `omdb` | ✅ | OMDb details (requires a key) |
 | `az`, `decade` | ✅ | Sort initial (`0-9`, `#`, `A`...), decade (`1990s`) |
 | `ci`, `cy` | ❌ | Collection index / years |
 | `localize`, `order`, `db`, `historic` | ❌ | Dynamic access to other languages/orders/databases |

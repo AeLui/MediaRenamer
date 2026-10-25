@@ -72,7 +72,7 @@ public class FormatDialog extends JDialog {
     static {
         VARIABLES.put("format.vars.identification", List.of("n", "y", "ny", "t", "s", "e", "es", "s00", "e00", "sxe", "s00e00", "sn", "absolute", "special",
                 "regular", "d", "airdate", "startdate", "age", "id", "tmdbid", "tvdbid", "imdbid", "alias", "primaryTitle", "anime", "type"));
-        VARIABLES.put("format.vars.objects", List.of("episode", "episodes", "movie", "music", "series", "object", "info", "omdb", "self"));
+        VARIABLES.put("format.vars.objects", List.of("episode", "episodes", "movie", "music", "series", "object", "info", "self"));
         VARIABLES.put("format.vars.metadata", List.of("genres", "genre", "rating", "votes", "certification", "collection", "director", "actors", "runtime",
                 "country", "language", "languages", "az", "decade", "AnimeList.TheTVDB", "XEM.scene"));
         VARIABLES.put("format.vars.file", List.of("fn", "ext", "f", "file", "folder", "original", "drive", "home", "today", "bytes", "megabytes",

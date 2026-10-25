@@ -10,7 +10,7 @@ The labels below are the English ones; the interface can be shown in other langu
 The first time MediaRenamer is opened (when there is no preferences file yet) a short wizard appears:
 
 1. **Language** of the interface (the system language is preselected). Choosing one switches the wizard to it at once.
-2. **Data services**: the API keys of TheMovieDB, TheTVDB, OMDb, AcoustID and AniDB. The ⓘ icon next to each one
+2. **Data services**: the API keys of TheMovieDB, TheTVDB, AcoustID and AniDB. The ⓘ icon next to each one
    explains what it is used for, and **Get** opens the page where the key is requested. All are optional:
    ID3 tags (music) and File mode work without a key.
 3. **Media servers** (optional): **Jellyfin** (server URL and API Key; with the URL written, **Get** opens the API
@@ -33,9 +33,9 @@ changed later in **Preferences**, which shows the same ⓘ icons. To see the wiz
    is selected in both lists; a selection you made is kept when you add more files or fetch data.
 2. **Identify**: choose one of these two options.
    - **Profiles**: applies a saved profile. It sets the target folder, format, data source, episode
-     order, mode, language, action and, if specified, whether Jellyfin and/or Plex are scanned at the end; then it
+     order, mode, language and, if specified, whether Jellyfin and/or Plex are scanned at the end; then it
      fetches the data.
-   - **Fetch data**: choose the source (*Movies*: TheMovieDB, OMDb; *Series*: TheMovieDB TV, TheTVDB, AniDB;
+   - **Fetch data**: choose the source (*Movies*: TheMovieDB; *Series*: TheMovieDB TV, TheTVDB, AniDB;
      *Music*; *File*). The same menu changes the matching mode
      (strict/opportunistic), the episode order and the data language. Choosing a source here stops using the active profile.
 3. **Review** the *Target files* list and fix whatever is needed (see below).
@@ -117,13 +117,19 @@ MediaRenamer is opened. Do not confuse it with the *data language* (titles, over
 
 ## Profiles
 
-**Profiles → Edit profiles…** creates, edits and deletes profiles: name, target folder, format, data source, episode
-order, matching mode, language, action and the Jellyfin/Plex scans (*(don't change)* = the current or Preferences
-option is used).
+**Profiles → Edit profiles…** creates, edits and deletes profiles: name, **media type**, data source, target folder,
+format, episode order, matching mode, language and the Jellyfin/Plex scans (*(don't change)* = the current or
+Preferences option is used). The rename action is not part of a profile: it is always the one chosen in the main window.
+
+- **Media type** (*Movies*, *Series*, *Music*) decides which data sources are offered (Movies: TheMovieDB; Series:
+  TheMovieDB::TV, TheTVDB, AniDB; Music: ID3, AcoustID) and which fields are shown: *Episode order* only for series,
+  *Matching mode* and *Language* not for music. Changing the type selects that type's default source, clears the
+  fields that no longer apply and, if the format was still the previous type's, puts the new type's format.
+  Profiles saved with the *file* source (or the removed OMDb) open as *Movies* with TheMovieDB.
 
 - **Format → Editor…** opens the same format editor as the main window, with live preview, starting from the
   profile's format. Its mode is fixed by the profile's data source (TheMovieDB → Movies, TheMovieDB::TV → Series,
-  *file* → File…), with a sample file of that mode. **Use format** copies the result to the profile.
+  ID3 → Music…), with a sample file of that mode. **Use format** copies the result to the profile.
 - **Language** is the same searchable list as in Preferences; its first entry is *(don't change)*.
 - **New** adds an untitled profile to the list. It is not stored until you save it.
 - **Unsaved changes** are kept while you move from one profile to another. A profile with changes is shown in orange

@@ -23,7 +23,6 @@ record ApiService(String settingsKey, String labelKey, String infoKey, boolean s
             new ApiService(Settings.TMDB_KEY, "prefs.tmdb", "service.info.tmdb", true, "https://www.themoviedb.org/settings/api"),
             new ApiService(Settings.TVDB_KEY, "prefs.tvdb", "service.info.tvdb", true, "https://thetvdb.com/api-information"),
             new ApiService(Settings.TVDB_PIN, "prefs.tvdbPin", "service.info.tvdbPin", true, null),
-            new ApiService(Settings.OMDB_KEY, "prefs.omdb", "service.info.omdb", true, "https://www.omdbapi.com/apikey.aspx"),
             new ApiService(Settings.ACOUSTID_KEY, "prefs.acoustid", "service.info.acoustid", true, "https://acoustid.org/new-application"),
             new ApiService(Settings.ANIDB_CLIENT, "prefs.anidb", "service.info.anidb", false, "https://anidb.net/software/add"),
             new ApiService(Settings.ANIDB_CLIENT_VERSION, "prefs.anidbVersion", "service.info.anidbVersion", false, null));

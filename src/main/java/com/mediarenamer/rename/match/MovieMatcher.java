@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 
 /**
  * Movie mode: detects "Title (Year)" in the name of the
- * file or its folder, searches TheMovieDB/OMDb and picks the best result (title + year).
+ * file or its folder, searches TheMovieDB and picks the best result (title + year).
  * If there is an IMDb/TMDb id in the name or in a .nfo next to the file, it is used directly.
  */
 public class MovieMatcher implements AutoCompleteMatcher {

@@ -3,7 +3,7 @@ package com.mediarenamer.web;
 import java.util.List;
 import java.util.Locale;
 
-/** Movie data provider (TheMovieDB, OMDb). */
+/** Movie data provider (TheMovieDB). */
 public interface MovieLookupService extends Datasource {
 
     List<Movie> searchMovie(String query, int year, Locale locale) throws Exception;

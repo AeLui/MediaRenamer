@@ -10,7 +10,6 @@ an explanatory error if they are missing.
 | `TheMovieDB::TV` (`tmdb::tv`) | `TMDbTVClient` | Episode | `apikey.tmdb` | 40 req / 10 s | 7 days |
 | `TheTVDB` (`tvdb`) | `TheTVDBClient` | Episode | `apikey.tvdb` (+ `apikey.tvdb.pin`) | — | 7 days (token 25 days) |
 | `AniDB` (`anidb`) | `AniDBClient` | Episode (anime) | `apikey.anidb.client` (+ `clientver`) | **1 req / 2.5 s** | 7 days; titles 1 day |
-| `OMDb` (`omdb`) | `OMDbClient` | Movie | `apikey.omdb` | 20 req / 10 s | 7 days |
 | `AcoustID` (`acoustid`) | `AcoustIDClient` | Music | `apikey.acoustid` + `fpcalc` | 3 req / s | 30 days |
 | `ID3` (`tags`) | `ID3Lookup` | Music | **not needed** (MediaInfo) | — | — |
 | `file` | `FileMatcher` | File | — | — | — |
@@ -54,11 +53,6 @@ an explanatory error if they are missing.
   entities, DTDs or schemas (no XXE) and limits entity expansion.
   `epno type=1` → regular episodes (absolute numbering, no season); `type=2` → specials.
 - **Careful**: AniDB bans the IP on abuse. The limiter is set to 1 request / 2.5 s and the cache to 7 days.
-
-## OMDb (`OMDbClient`)
-
-- `https://www.omdbapi.com/?s=..&y=..&type=movie&apikey=..` and `?i=tt..&plot=short`.
-- Provides an alternative `{info}` (genres, director, actors, IMDb rating, votes) and the `{omdb}` variable.
 
 ## AcoustID (`AcoustIDClient`)
 

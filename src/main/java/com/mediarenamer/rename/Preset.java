@@ -10,15 +10,16 @@ import java.util.Map;
 
 /**
  * Rename preset: format + data source + order +
- * matching mode + language + action. JSON shape:
+ * matching mode + language. JSON shape:
  * {"@type":"Preset","id":"..","name":"..","format":"..","database":"TheMovieDB","sortOrder":"Airdate",
- * "matchMode":"Opportunistic","language":"es","action":"MOVE"}
+ * "matchMode":"Opportunistic","language":"es"}
  * plus two own fields: "outputFolder", the preset's target folder (takes precedence over the Preferences one),
  * "jellyfinScan" and "plexScan", scan Jellyfin / Plex after renaming with this preset (true/false; absent = use the
- * general preference).
+ * general preference). The media type (movies, series, music) is the one of the data source. The "action" field of
+ * presets saved before 2.5 is ignored (the rename action is always the one chosen in the main window).
  */
-public record Preset(String id, String name, String format, String database, String sortOrder, String matchMode, String language, String action,
-        String outputFolder, Boolean jellyfinScan, Boolean plexScan) {
+public record Preset(String id, String name, String format, String database, String sortOrder, String matchMode, String language, String outputFolder,
+        Boolean jellyfinScan, Boolean plexScan) {
 
     public Preset {
         if (id == null || id.isBlank()) {
@@ -28,14 +29,13 @@ public record Preset(String id, String name, String format, String database, Str
     }
 
     /** Preset without its own target folder. */
-    public Preset(String id, String name, String format, String database, String sortOrder, String matchMode, String language, String action) {
-        this(id, name, format, database, sortOrder, matchMode, language, action, null, null, null);
+    public Preset(String id, String name, String format, String database, String sortOrder, String matchMode, String language) {
+        this(id, name, format, database, sortOrder, matchMode, language, null, null, null);
     }
 
     /** Preset that uses the general Jellyfin and Plex preferences. */
-    public Preset(String id, String name, String format, String database, String sortOrder, String matchMode, String language, String action,
-            String outputFolder) {
-        this(id, name, format, database, sortOrder, matchMode, language, action, outputFolder, null, null);
+    public Preset(String id, String name, String format, String database, String sortOrder, String matchMode, String language, String outputFolder) {
+        this(id, name, format, database, sortOrder, matchMode, language, outputFolder, null, null);
     }
 
     /** null if the source does not exist or it is the file mode. */
@@ -66,11 +66,6 @@ public record Preset(String id, String name, String format, String database, Str
         return language == null || language.isBlank() ? null : Locale.forLanguageTag(language);
     }
 
-    /** null = do not change the current action. */
-    public RenameAction getAction() {
-        return action == null || action.isBlank() ? null : RenameAction.forName(action);
-    }
-
     public Map<String, Object> toJson() {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("@type", "Preset");
@@ -81,7 +76,6 @@ public record Preset(String id, String name, String format, String database, Str
         putIfPresent(m, "sortOrder", sortOrder);
         putIfPresent(m, "matchMode", matchMode);
         putIfPresent(m, "language", language);
-        putIfPresent(m, "action", action);
         putIfPresent(m, "outputFolder", outputFolder);
         if (jellyfinScan != null) {
             m.put("jellyfinScan", jellyfinScan);
@@ -94,7 +88,7 @@ public record Preset(String id, String name, String format, String database, Str
 
     public static Preset fromJson(Map<?, ?> m) {
         return new Preset(str(m, "id"), str(m, "name"), str(m, "format"), str(m, "database"), str(m, "sortOrder"), str(m, "matchMode"), str(m, "language"),
-                str(m, "action"), str(m, "outputFolder"), bool(m, "jellyfinScan"), bool(m, "plexScan"));
+                str(m, "outputFolder"), bool(m, "jellyfinScan"), bool(m, "plexScan"));
     }
 
     private static Boolean bool(Map<?, ?> m, String k) {
