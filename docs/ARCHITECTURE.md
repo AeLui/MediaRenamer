@@ -165,7 +165,8 @@ com.mediarenamer
 - `ApiService`: the API key fields shared by `PreferencesDialog` and `SetupWizard` (settings key, label, info text for the
   ⓘ tooltip, "Get" URL) and the reusable "Test connection" button of the media servers (`serverTestButton`).
 - `AboutDialog`: version, author, credits, Java, data folder and notices; opened from the ⓘ button of the header or by
-  clicking the version in the status bar.
+  clicking the version in the status bar. Its *Third-party licenses* button opens `ThirdPartyLicensesDialog`, which shows
+  `META-INF/THIRD-PARTY-NOTICES.txt` (copied by Maven from the repository root; read bounded, shown as plain text).
 - Dialogs: `PresetsDialog` (per-profile drafts compared with the form as first shown, so switching profile keeps
   unsaved edits; modified entries drawn in `Theme.MODIFIED`; Save stores every draft; *Editor…* opens
   `FormatDialog.forProfile` with the mode of the chosen data source), `FormatDialog` (RSyntaxTextArea + preview evaluated

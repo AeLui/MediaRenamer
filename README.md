@@ -55,7 +55,8 @@ command line.
   explaining what it is for.
 - **Setup wizard on the first run**: interface language, the API keys of the data services (with what each one is
   for and a button to get the key) and the media servers (Jellyfin, Plex). See [docs/USAGE.md](docs/USAGE.md#first-run-setup-wizard).
-- **About MediaRenamer** (ⓘ button in the header, or click the version in the status bar): version, author, credits.
+- **About MediaRenamer** (ⓘ button in the header, or click the version in the status bar): version, author, credits
+  and **Third-party licenses** (the license notices of the bundled libraries and Java runtime).
 - **Poster search**: TMDb/TheTVDB/OMDb results show poster, year, original title and
   overview; on mouse hover a card shows director/creators, cast, genres, runtime, rating…
 
@@ -76,6 +77,8 @@ It produces (the version comes from `pom.xml`):
   Installing a newer version upgrades the existing one; uninstalling keeps your preferences, keys, profiles and history.
 - `dist\MediaRenamer\MediaRenamer.exe` (desktop) and `dist\MediaRenamer\MediaRenamer-cli.exe` (console), and
   `dist\MediaRenamer-<version>-windows.zip` with that folder (portable version).
+- Every package carries `THIRD-PARTY-NOTICES.txt` next to the exe and the Java runtime notices in `runtime\legal`
+  (see [docs/THIRD_PARTY.md](docs/THIRD_PARTY.md)).
 
 Everything bundles its own Java (the JDK that runs `jpackage`, so build with the latest Java 21 security update; the
 script prints the bundled version): nothing needs to be installed to run it. Building the installer needs
@@ -115,8 +118,11 @@ java -jar target/MediaRenamer.jar -rename "D:/Downloads" -r --db TheMovieDB::TV 
 | [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | Preferences, API keys, external tools, data files |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Building, testing, conventions, **security standards** (mandatory for every change) and how to extend |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Status of each feature, by version |
+| [docs/THIRD_PARTY.md](docs/THIRD_PARTY.md) | Third-party components and their licenses, where the notices ship, Store listing text |
 
 ## Legal notice
 
 MediaRenamer is for personal use. It ships no API keys: each user configures their own credentials.
 Respect the terms of use of each service (TMDb, TheTVDB, AniDB, OMDb, AcoustID).
+Third-party components and their licenses: [docs/THIRD_PARTY.md](docs/THIRD_PARTY.md) and
+[THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt).

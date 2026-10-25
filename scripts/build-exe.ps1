@@ -6,6 +6,7 @@
   Output:
     dist\MediaRenamer\MediaRenamer.exe          desktop application (no console)
     dist\MediaRenamer\MediaRenamer-cli.exe      same application with a console, for the command line
+    dist\MediaRenamer\THIRD-PARTY-NOTICES.txt   third-party license notices (Java runtime ones: runtime\legal)
     dist\MediaRenamer-<version>-windows.zip    the folder above zipped (portable, copy to another machine)
     dist\MediaRenamer-<version>-setup.exe      Windows installer (Inno Setup 6, src\main\packaging\MediaRenamer.iss)
 
@@ -102,9 +103,31 @@ jpackage --type app-image `
     --dest $dist
 if ($LASTEXITCODE -ne 0) { throw "jpackage failed" }
 
+# Third-party license notices next to the exe (the zip and the installer take them from here); the Java runtime's
+# own notices are runtime\legal, which jlink keeps (only --no-man-pages/--no-header-files are stripped)
+$notices = "THIRD-PARTY-NOTICES.txt"
+Copy-Item (Join-Path $root $notices) $appDir
+if (-not (Test-Path (Join-Path $appDir "runtime\legal\java.base\LICENSE"))) {
+    throw "The runtime image has no legal\java.base\LICENSE: the OpenJDK notices must ship with the runtime."
+}
+$runtimeVersion = (Select-String -Path (Join-Path $appDir "runtime\release") -Pattern '^JAVA_VERSION="(.*)"').Matches.Groups[1].Value
+if (-not (Select-String -Path (Join-Path $appDir $notices) -SimpleMatch $runtimeVersion -Quiet)) {
+    Write-Warning "$notices does not mention the bundled Java runtime ${runtimeVersion}: update its Java runtime section."
+}
+
 $zip = Join-Path $dist "MediaRenamer-$Version-windows.zip"
 Remove-Item -Force $zip -ErrorAction SilentlyContinue
 Compress-Archive -Path $appDir -DestinationPath $zip
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$archive = [System.IO.Compression.ZipFile]::OpenRead($zip)
+try {
+    $entries = $archive.Entries | ForEach-Object { $_.FullName -replace '\\', '/' }
+    foreach ($required in @("MediaRenamer/$notices", "MediaRenamer/runtime/legal/java.base/LICENSE")) {
+        if ($entries -notcontains $required) { throw "$zip does not contain $required" }
+    }
+} finally {
+    $archive.Dispose()
+}
 
 $setup = $null
 if (-not $SkipInstaller) {

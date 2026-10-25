@@ -98,6 +98,11 @@ Step "install (all users, silent)" {
     $ok = $p.ExitCode -eq 0 -and (Test-Path "$machineDir\MediaRenamer.exe") -and (Test-Path "$machineDir\MediaRenamer-cli.exe")
     @($ok, "exit $($p.ExitCode); exe present: $(Test-Path "$machineDir\MediaRenamer.exe")")
 }
+Step "third-party notices installed" {
+    $notices = Test-Path "$machineDir\THIRD-PARTY-NOTICES.txt"
+    $legal = Test-Path "$machineDir\runtime\legal\java.base\LICENSE"
+    @(($notices -and $legal), "THIRD-PARTY-NOTICES.txt: $notices; runtime\legal\java.base\LICENSE: $legal")
+}
 Step "uninstall entry and shortcut (all users)" {
     $k = Get-ItemProperty $hklmKey -ErrorAction SilentlyContinue
     $lnk = Test-Path (Join-Path ([Environment]::GetFolderPath("CommonPrograms")) "MediaRenamer.lnk")

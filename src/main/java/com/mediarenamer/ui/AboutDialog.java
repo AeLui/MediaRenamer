@@ -31,11 +31,14 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
-/** "About MediaRenamer": version, author, credits, runtime and data folder. */
+/** "About MediaRenamer": version, author, credits, runtime, data folder and third-party licenses. */
 public class AboutDialog extends JDialog {
 
     static final String AUTHOR = "AeLiu";
     private static final String CLAUDE_CODE_URL = "https://claude.com/claude-code";
+
+    /** Opens the third-party license notices. */
+    final JButton licenses;
 
     public AboutDialog(JFrame owner) {
         super(owner, tr("about.title"), true);
@@ -106,10 +109,15 @@ public class AboutDialog extends JDialog {
         notice.setForeground(Theme.secondaryText());
         notice.putClientProperty("FlatLaf.style", "font: -1");
         south.add(notice, BorderLayout.NORTH);
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        JPanel buttons = new JPanel(new BorderLayout());
+        licenses = new JButton(tr("about.licenses"));
+        licenses.putClientProperty("JButton.buttonType", "borderless");
+        licenses.setForeground(Theme.accentText());
+        licenses.addActionListener(e -> new ThirdPartyLicensesDialog(this).setVisible(true));
+        buttons.add(licenses, BorderLayout.WEST);
         JButton close = new JButton(tr("common.close"));
         close.addActionListener(e -> dispose());
-        buttons.add(close);
+        buttons.add(close, BorderLayout.EAST);
         south.add(buttons, BorderLayout.SOUTH);
         content.add(south, BorderLayout.SOUTH);
 

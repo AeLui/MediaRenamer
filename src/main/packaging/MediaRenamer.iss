@@ -19,6 +19,14 @@
   #error LogoFile must be defined (/DLogoFile=...\docs\img\logo-128.png)
 #endif
 
+; The third-party license notices must ship with every installation (build-exe.ps1 copies them into the app-image)
+#if !FileExists(AddBackslash(SourceDir) + "THIRD-PARTY-NOTICES.txt")
+  #error THIRD-PARTY-NOTICES.txt is missing from SourceDir
+#endif
+#if !FileExists(AddBackslash(SourceDir) + "runtime\legal\java.base\LICENSE")
+  #error runtime\legal (the Java runtime notices) is missing from SourceDir
+#endif
+
 [Setup]
 ; Fixed AppId: new versions upgrade the existing installation instead of installing a second copy.
 ; FileRenamer (the name before 2.0) used another AppId and is uninstalled first: see [Code]
@@ -71,6 +79,7 @@ Type: filesandordirs; Name: "{app}\runtime"
 Type: filesandordirs; Name: "{app}\app"
 
 [Files]
+; Includes THIRD-PARTY-NOTICES.txt (next to the exe) and runtime\legal (Java runtime notices)
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
