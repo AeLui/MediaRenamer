@@ -157,4 +157,34 @@ class ThirdPartyNoticesTest {
             }
         });
     }
+
+    @Test
+    void aboutHasNoDevelopmentToolCredit() throws Exception {
+        assumeFalse(GraphicsEnvironment.isHeadless());
+        I18n.setLocale(Locale.ENGLISH);
+        SwingUtilities.invokeAndWait(() -> {
+            AboutDialog about = new AboutDialog(null);
+            try {
+                List<String> texts = new ArrayList<>();
+                collectLabels(about.getContentPane(), texts);
+                assertTrue(texts.contains("AeLiu"), "labels found: " + texts);
+                for (String t : texts) {
+                    assertFalse(t.contains("Claude") || t.startsWith("Powered by"), t);
+                }
+            } finally {
+                about.dispose();
+            }
+        });
+    }
+
+    private static void collectLabels(java.awt.Container c, List<String> out) {
+        for (java.awt.Component child : c.getComponents()) {
+            if (child instanceof javax.swing.JLabel l && l.getText() != null) {
+                out.add(l.getText());
+            }
+            if (child instanceof java.awt.Container sub) {
+                collectLabels(sub, out);
+            }
+        }
+    }
 }

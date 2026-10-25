@@ -183,7 +183,7 @@ move between pages, next to *Page n of N · total renames*.
 ## About MediaRenamer
 
 The discreet **ⓘ** button at the top right (or a click on the version at the bottom right) opens *About MediaRenamer*:
-version, author (AeLiu), "Powered by Claude Code", Java version,
+version, author (AeLiu), Java version,
 data folder (with a button to open it), libraries and the notices of the data services. **Third-party licenses**
 (bottom left) shows the licenses and notices of the bundled libraries and Java runtime (the same text as
 `THIRD-PARTY-NOTICES.txt` next to the exe; the Java runtime notices are also in the `runtime\legal` folder).

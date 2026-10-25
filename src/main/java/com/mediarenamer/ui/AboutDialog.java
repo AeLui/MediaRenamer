@@ -7,7 +7,6 @@ import com.mediarenamer.app.Settings;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
@@ -16,8 +15,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -35,7 +32,6 @@ import javax.swing.SwingConstants;
 public class AboutDialog extends JDialog {
 
     static final String AUTHOR = "AeLiu";
-    private static final String CLAUDE_CODE_URL = "https://claude.com/claude-code";
 
     /** Opens the third-party license notices. */
     final JButton licenses;
@@ -79,7 +75,6 @@ public class AboutDialog extends JDialog {
         c.anchor = GridBagConstraints.WEST;
         int row = 0;
         row = fact(facts, c, row, tr("about.author"), new JLabel(AUTHOR));
-        row = fact(facts, c, row, tr("about.poweredBy"), link("Claude Code", CLAUDE_CODE_URL));
         row = fact(facts, c, row, "Java", new JLabel(System.getProperty("java.version") + " · " + System.getProperty("java.vendor")));
         JPanel data = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         JLabel folder = new JLabel(ConflictDialog.abbreviate(AppFolders.data().toAbsolutePath().toString(), 52));
@@ -138,24 +133,5 @@ public class AboutDialog extends JDialog {
         c.gridx = 1;
         p.add(value, c);
         return row + 1;
-    }
-
-    /** Text in the accent color that opens a web page. */
-    private static JLabel link(String text, String url) {
-        JLabel l = new JLabel(text);
-        l.setForeground(Theme.accentText());
-        l.setToolTipText(url);
-        l.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        l.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                try {
-                    java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
-                } catch (Exception ex) {
-                    // no browser available: the URL stays in the tooltip
-                }
-            }
-        });
-        return l;
     }
 }
