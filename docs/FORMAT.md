@@ -182,3 +182,6 @@ External dictionary example: `{csv('D:/names.csv').get(n, n)}`.
 2. Return `null` (or an empty collection/string) when it does not apply: the block will be emptied by itself.
 3. If it does expensive I/O, compute it lazily (like `media()` or `getMovieInfo()`).
 4. Update the table in this document and add a case to `ExpressionFormatTest`.
+5. Add it to its group in `FormatDialog.VARIABLES` (the tooltip of the **ⓘ Variables** link of the format editor):
+   `FormatVariablesTest` fails while a defined variable is missing from that list, or the list names one that does
+   not exist.

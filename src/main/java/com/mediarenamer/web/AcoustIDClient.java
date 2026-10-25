@@ -128,12 +128,23 @@ public class AcoustIDClient implements MusicLookupService {
     }
 
     static Path findFpcalc() {
+        return findFpcalc(true);
+    }
+
+    /** Where fpcalc is found when no path is set (for the placeholder of Preferences → Tools); null if it is not installed. */
+    public static Path detectedFpcalc() {
+        return findFpcalc(false);
+    }
+
+    private static Path findFpcalc(boolean withConfigured) {
         List<Path> candidates = new ArrayList<>();
-        String configured = Settings.get().get(Settings.FPCALC_PATH);
-        if (configured != null) {
-            candidates.add(Paths.get(configured).toAbsolutePath());
-        }
         String exe = System.getProperty("os.name", "").toLowerCase().contains("win") ? "fpcalc.exe" : "fpcalc";
+        String configured = withConfigured ? Settings.get().get(Settings.FPCALC_PATH) : null;
+        if (configured != null) {
+            Path c = Paths.get(configured).toAbsolutePath();
+            // the path may be fpcalc itself or the folder that holds it (like the MediaInfo one)
+            candidates.add(java.nio.file.Files.isDirectory(c) ? c.resolve(exe) : c);
+        }
         // lib next to the application, never relative to the working directory (planted executables)
         Path app = com.mediarenamer.app.AppFolders.installDir();
         if (app != null) {

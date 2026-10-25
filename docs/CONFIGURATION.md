@@ -39,7 +39,7 @@ Since v0.7 the API keys (`apikey.tmdb`, `apikey.tvdb`, `apikey.tvdb.pin`, `apike
 | `apikey.anidb.client` | `MEDIARENAMER_APIKEY_ANIDB_CLIENT` | Name of the HTTP client registered at AniDB |
 | `apikey.anidb.clientver` | `MEDIARENAMER_APIKEY_ANIDB_CLIENTVER` | AniDB client version (default 1) |
 | `ui.language` | `MEDIARENAMER_UI_LANGUAGE` | Interface and CLI language: `en`, `es`, `fr`, `de`, `pt`, `it`. Empty = the system's (English if it is not one of those) |
-| `rename.language` | | Data language (`es-ES`). Empty = system language |
+| `rename.language` | | Data language (`es-ES`), chosen from the list in Preferences → Data services. Empty = system language |
 | `rename.episode.order` | | Default episode order |
 | `rename.match.mode` | | `Strict` or `Opportunistic` |
 | `rename.action`, `rename.conflict` | | GUI "Action" and "If it exists" (default `MOVE` and `ASK` = ask each time) |
@@ -55,7 +55,7 @@ Since v0.7 the API keys (`apikey.tmdb`, `apikey.tvdb`, `apikey.tvdb.pin`, `apike
 | `plex.scan` | | `true` = *Scan the Plex libraries after each operation* (default `false`). A profile can change it |
 | `plex.clientid` | | Random id of this installation for plex.tv (`X-Plex-Client-Identifier`), created on the first sign-in. Not a secret |
 | `tool.mediainfo` | `MEDIARENAMER_TOOL_MEDIAINFO` | Folder or path of `MediaInfo.dll` / `MediaInfo.exe` |
-| `tool.fpcalc` | `MEDIARENAMER_TOOL_FPCALC` | Path of `fpcalc.exe` |
+| `tool.fpcalc` | `MEDIARENAMER_TOOL_FPCALC` | Folder or path of `fpcalc.exe` |
 | `ui.dark` | | Dark theme |
 
 ## Interface language
@@ -151,8 +151,11 @@ You can also paste a token by hand (for example one taken from *View XML* in Ple
 - **MediaInfo** (technical variables and ID3 mode): the 64-bit `MediaInfo.dll` is used. It is found automatically if
   MediaInfo is installed (`C:\Program Files\MediaInfo`), in the `lib` folder next to `MediaRenamer.exe` (or the jar)
   or on the `PATH`; otherwise set `tool.mediainfo`.
-- **fpcalc** (AcoustID): from https://acoustid.org/chromaprint; searched in `tool.fpcalc`, the `lib` folder next to
-  `MediaRenamer.exe` (or the jar), `C:\Program Files\Chromaprint` and the `PATH`.
+- **fpcalc** (AcoustID): from https://acoustid.org/chromaprint; searched in `tool.fpcalc` (the program or the folder
+  that holds it), the `lib` folder next to `MediaRenamer.exe` (or the jar), `C:\Program Files\Chromaprint` and the `PATH`.
+- In **Preferences → Tools** each path has a **Choose…** button (a file chooser limited to the tool's file names) and a
+  line that checks the typed path: the tool's own file or a folder holding it, absolute, and existing. Empty shows
+  where the automatic search finds the tool. Only names and existence are checked: the tool is not run from there.
 - Tools are **never** looked for relative to the current folder (`./lib`, relative `PATH` entries): a `MediaInfo.dll`
   or `fpcalc.exe` left in a downloaded or shared folder from which the CLI is run is not loaded. On Windows the
   generic system library search is not used either. A run of the MediaInfo CLI is stopped after 2 minutes and one of

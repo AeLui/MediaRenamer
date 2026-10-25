@@ -65,9 +65,14 @@ public class PreferencesDialog extends JDialog {
             @Override
             public Component getListCellRendererComponent(JList<?> l, Object v, int i, boolean s, boolean f) {
                 Category c = (Category) v;
-                JLabel label = (JLabel) super.getListCellRendererComponent(l, tr(c.key()), i, s, false);
+                // a category with unsaved changes is shown in the "modified" color, with a dot
+                boolean dirty = pages.isDirty(c);
+                JLabel label = (JLabel) super.getListCellRendererComponent(l, tr(c.key()) + (dirty ? "  •" : ""), i, s, false);
+                if (dirty && !s) {
+                    label.setForeground(Theme.MODIFIED);
+                }
                 // on the selected (accent) row the icon goes white like the text
-                label.setIcon(icon(c).withSize(18).withColor(s ? java.awt.Color.WHITE : Theme.secondaryText()));
+                label.setIcon(icon(c).withSize(18).withColor(s ? java.awt.Color.WHITE : dirty ? Theme.MODIFIED : Theme.secondaryText()));
                 label.setIconTextGap(10);
                 label.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
                 return label;
@@ -88,18 +93,27 @@ public class PreferencesDialog extends JDialog {
         buttons.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Theme.border()),
                 BorderFactory.createEmptyBorder(10, 14, 10, 14)));
         JButton cancel = new JButton(tr("common.cancel"));
-        cancel.addActionListener(e -> dispose());
+        cancel.addActionListener(e -> close(owner));
         JButton save = new JButton(tr("common.save"));
         save.addActionListener(e -> save(owner));
         buttons.add(cancel);
         buttons.add(save);
+        pages.setChangeListener(categories::repaint);
 
         setLayout(new BorderLayout());
         add(side, BorderLayout.WEST);
         add(content, BorderLayout.CENTER);
         add(buttons, BorderLayout.SOUTH);
         getRootPane().setDefaultButton(save);
-        getRootPane().registerKeyboardAction(e -> dispose(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
+        getRootPane().registerKeyboardAction(e -> close(owner), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
+        // closing the window (Cancel, Escape, X) with unsaved changes asks whether to save or discard them
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                close(owner);
+            }
+        });
         categories.setSelectedValue(lastCategory, true);
         setSize(new Dimension(940, 600));
         setMinimumSize(new Dimension(760, 460));
@@ -153,8 +167,37 @@ public class PreferencesDialog extends JDialog {
         };
     }
 
+    /** True if some option differs from the saved preferences (for tests and screenshots). */
+    boolean hasUnsavedChanges() {
+        return pages.isDirty();
+    }
+
+    /** Closes the dialog; with unsaved changes it first asks: Save, Discard or go back to the dialog. */
+    private void close(JFrame owner) {
+        switch (pages.isDirty() ? askUnsaved(this) : UnsavedChoice.DISCARD) {
+            case SAVE -> save(owner);
+            case DISCARD -> dispose();
+            case BACK -> { }
+        }
+    }
+
+    /** Answer to the unsaved changes question. */
+    enum UnsavedChoice {
+        SAVE, DISCARD, BACK
+    }
+
+    /** "There are unsaved changes": Save / Discard / Cancel (= back to the dialog). Also used by Profiles. */
+    static UnsavedChoice askUnsaved(Component parent) {
+        Object[] options = { tr("unsaved.save"), tr("unsaved.discard"), tr("common.cancel") };
+        int r = JOptionPane.showOptionDialog(parent, tr("unsaved.text"), tr("unsaved.title"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE,
+                null, options, options[0]);
+        return r == 0 ? UnsavedChoice.SAVE : r == 1 ? UnsavedChoice.DISCARD : UnsavedChoice.BACK;
+    }
+
     private void save(JFrame owner) {
         pages.save();
+        // a MediaInfo path chosen now is used without restarting
+        com.mediarenamer.media.MediaInfo.reset();
         Locale before = I18n.locale();
         String tag = pages.uiLanguageTag();
         Settings.get().put(Settings.UI_LANGUAGE, tag);

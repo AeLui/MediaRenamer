@@ -21,6 +21,8 @@ public final class Theme {
     public static final Color SUCCESS = new Color(0x16A34A);
     public static final Color ERROR = new Color(0xDC2626);
     public static final Color WARNING = new Color(0xD97706);
+    /** Category or profile with unsaved changes (Preferences, Profiles). */
+    public static final Color MODIFIED = WARNING;
 
     private Theme() {
     }

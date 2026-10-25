@@ -29,7 +29,8 @@ changed later in **Preferences**, which shows the same ⓘ icons. To see the wiz
 ## Basic flow
 
 1. **Add files**: drag files or folders onto *Source files*, or press **Add**
-   (or click the empty area). Folders are walked including their subfolders.
+   (or click the empty area). Folders are walked including their subfolders. If no row was selected, the first one
+   is selected in both lists; a selection you made is kept when you add more files or fetch data.
 2. **Identify**: choose one of these two options.
    - **Profiles**: applies a saved profile. It sets the target folder, format, data source, episode
      order, mode, language, action and, if specified, whether Jellyfin and/or Plex are scanned at the end; then it
@@ -67,10 +68,23 @@ last category opened is shown again:
 | Data services | API keys (with **Get** to request each one) and the data language |
 | Target folders | default folder per type (Movies, Series, Anime, Music, Other) |
 | Media servers | **Jellyfin**: server URL, API Key (**Get** opens the API keys page of your server once the URL is written), **Test connection**, automatic scan. **Plex** (below a separator): server URL, token (**Sign in…** gets it from plex.tv), **Test connection**, automatic scan |
-| Tools | MediaInfo and fpcalc paths |
+| Tools | MediaInfo and fpcalc paths, each with **Choose…** |
 
 Every option has an **ⓘ** icon: hover over it (or over the field) to see what it is for. The *Data services* and
 *Media servers* pages are the same ones the setup wizard shows.
+
+- **Data language**: a list of every language and language-country pair (*Español (España)*, *English (United
+  States)*…), shown in the interface language with its tag on the side. Type to filter it by name or tag (`espa`,
+  `es-MX`; case and accents do not matter) and press Enter or leave the field to pick the match; text that matches
+  nothing goes back to the previous value. The first entry, *Automatic*, uses the system language.
+- **Tools**: empty = the tool is searched automatically, and the line under the field says where it was found.
+  **Choose…** opens a file chooser limited to the tool's files (`MediaInfo.dll`/`MediaInfo.exe`, `fpcalc.exe`); a
+  folder that holds them can also be typed. The line checks the path as you type: ✓ found, the file does not exist, or
+  it is not that tool. The tool is not run to check it. A new MediaInfo path is used after saving, without restarting
+  (unless MediaInfo was already loaded from another place: then on the next start).
+- **Unsaved changes**: changes are kept while you move between categories. A category with changes is shown in
+  orange with a dot. Closing the window (Cancel, Esc or ✕) with unsaved changes asks: **Save**, **Discard** or
+  **Cancel** (back to Preferences).
 
 ![Preferences](img/screenshot-preferences.png)
 
@@ -97,9 +111,28 @@ MediaRenamer is opened. Do not confuse it with the *data language* (titles, over
 | Changing only the name of a row | Double click the new name, or right click → *Edit name* |
 | Removing the match of a row | Right click → *Clear match* |
 | Seeing the format variables of a row | **Bindings** (or right click → *Show bindings*) |
-| Changing the format | **Format** opens the editor with live preview |
+| Changing the format | **Format** opens the editor with live preview. The **ⓘ Variables** link (top right) lists every variable by group and the common methods in its tooltip; clicking it shows the value of each variable for the sample file |
 
 ![Choose episode](img/screenshot-episode.png)
+
+## Profiles
+
+**Profiles → Edit profiles…** creates, edits and deletes profiles: name, target folder, format, data source, episode
+order, matching mode, language, action and the Jellyfin/Plex scans (*(don't change)* = the current or Preferences
+option is used).
+
+- **Format → Editor…** opens the same format editor as the main window, with live preview, starting from the
+  profile's format. Its mode is fixed by the profile's data source (TheMovieDB → Movies, TheMovieDB::TV → Series,
+  *file* → File…), with a sample file of that mode. **Use format** copies the result to the profile.
+- **Language** is the same searchable list as in Preferences; its first entry is *(don't change)*.
+- **New** adds an untitled profile to the list. It is not stored until you save it.
+- **Unsaved changes** are kept while you move from one profile to another. A profile with changes is shown in orange
+  with a dot, and **Save** stores all of them at once (a profile without a name or format is shown and nothing is
+  saved). Closing (Close, Esc or ✕) with unsaved changes asks: **Save**, **Discard** or **Cancel**.
+
+![Profiles](img/screenshot-presets.png)
+
+![Format editor opened from a profile](img/screenshot-format.png)
 
 ## Name pre-check
 

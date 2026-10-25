@@ -923,6 +923,10 @@ public class RenamePanel extends JPanel {
                 rows.addElement(new Row(f));
             }
         }
+        // nothing selected yet: the first row (both lists share the selection); an existing selection is kept
+        if (filesList.isSelectionEmpty() && !rows.isEmpty()) {
+            filesList.setSelectedIndex(0);
+        }
         Logging.info(plural("rename.log.loaded", rows.size()));
     }
 

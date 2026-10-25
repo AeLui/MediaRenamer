@@ -104,6 +104,13 @@ public final class I18n {
         return n.isEmpty() ? l.toLanguageTag() : n.substring(0, 1).toUpperCase(l) + n.substring(1);
     }
 
+    /** Language (and country) name in the interface language, capitalized: "Español (España)", "Spanish (Spain)". */
+    public static String displayName(Locale l) {
+        Locale ui = locale();
+        String n = l.getDisplayName(ui);
+        return n.isEmpty() ? l.toLanguageTag() : n.substring(0, 1).toUpperCase(ui) + n.substring(1);
+    }
+
     /**
      * Language of Swing's own texts (JOptionPane Yes/No buttons, JFileChooser). Swing ships
      * Brazilian Portuguese, not European Portuguese: pt-BR is used for those texts.

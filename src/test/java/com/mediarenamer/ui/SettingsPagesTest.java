@@ -69,9 +69,51 @@ class SettingsPagesTest {
                 assertTrue(infos.get() >= Math.max(1, fields.get()), c + ": fields " + fields + ", info icons " + infos);
             }
             // the text fields cover every preference shown by the old single-page dialog
-            assertTrue(pages.fields.keySet().containsAll(List.of(Settings.TMDB_KEY, Settings.LANGUAGE, Settings.DEST_MOVIES, Settings.DEST_OTHER,
+            assertTrue(pages.fields.keySet().containsAll(List.of(Settings.TMDB_KEY, Settings.DEST_MOVIES, Settings.DEST_OTHER,
                     Settings.JELLYFIN_URL, Settings.JELLYFIN_KEY, Settings.PLEX_URL, Settings.PLEX_TOKEN, Settings.MEDIAINFO_PATH, Settings.FPCALC_PATH)),
                     pages.fields.keySet().toString());
+        });
+    }
+
+    @Test
+    void dataLanguageIsChosenFromTheListAndSaved() throws Exception {
+        assumeFalse(GraphicsEnvironment.isHeadless());
+        I18n.setLocale(Locale.ENGLISH);
+        SwingUtilities.invokeAndWait(() -> {
+            // a typed value (wizard rebuilt in another language) is selected in the list
+            SettingsPages pages = new SettingsPages(null, java.util.Map.of(Settings.LANGUAGE, "es-MX"), null);
+            pages.page(Category.SERVICES);
+            assertEquals("es-MX", pages.values().get(Settings.LANGUAGE));
+            // the empty value (system language) is saved as an empty preference
+            SettingsPages auto = new SettingsPages(null, java.util.Map.of(Settings.LANGUAGE, ""), null);
+            auto.page(Category.SERVICES);
+            assertEquals("", auto.values().get(Settings.LANGUAGE));
+        });
+    }
+
+    @Test
+    void unsavedChangesAreTrackedPerCategory() throws Exception {
+        assumeFalse(GraphicsEnvironment.isHeadless());
+        I18n.setLocale(Locale.ENGLISH);
+        SwingUtilities.invokeAndWait(() -> {
+            SettingsPages pages = new SettingsPages(null);
+            AtomicInteger changes = new AtomicInteger();
+            pages.setChangeListener(changes::incrementAndGet);
+            for (Category c : Category.values()) {
+                pages.page(c);
+            }
+            assertTrue(!pages.isDirty(), "nothing changed yet");
+            JTextComponent movies = pages.fields.get(Settings.DEST_MOVIES);
+            String before = movies.getText();
+            movies.setText(before + "X");
+            assertTrue(pages.isDirty(Category.FOLDERS));
+            assertTrue(!pages.isDirty(Category.SERVICES) && !pages.isDirty(Category.TOOLS), "only the folders category");
+            assertTrue(changes.get() > 0, "the dialog is told to repaint its marks");
+            // back to the saved value: no longer a change
+            movies.setText(before);
+            assertTrue(!pages.isDirty());
+            pages.fields.get(Settings.FPCALC_PATH).setText("C:\\x\\fpcalc.exe");
+            assertTrue(pages.isDirty(Category.TOOLS));
         });
     }
 

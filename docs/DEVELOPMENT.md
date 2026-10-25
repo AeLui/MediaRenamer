@@ -97,7 +97,13 @@ java -cp "target/classes;target/test-classes;$(cat target/cp.txt)" com.mediarena
 | `EpisodeMatchingTest` | `Matcher` + `EpisodeMetrics`: SxE, multi-episode, season from the folder, strict mode, bare numbers vs absolute numbers |
 | `JellyfinClientTest` | Jellyfin scan (`POST /Library/Refresh`, token header, `/System/Info`, wrong key, server down, URL, profile precedence) and the API keys page by version (`/System/Info/Public`) against a local `HttpServer` |
 | `RenamePanelLayoutTest` | The two list cards are equally wide and the window is symmetric, in every language and window width |
-| `SettingsPagesTest` | Every Preferences category has title and description, every option has its ⓘ and every `info.*` text exists; the Plex scan option is only saved with URL and token; the status line never renders server text as HTML |
+| `SettingsPagesTest` | Every Preferences category has title and description, every option has its ⓘ and every `info.*` text exists; the Plex scan option is only saved with URL and token; the status line never renders server text as HTML; the data language comes from the list; unsaved changes are tracked per category and cleared when a value goes back |
+| `LanguagePickerTest` | Language list (every language by name in the interface language, only `xx` / `xx-YY` tags, unique names), search ignoring case and accents and matching tags, typed text resolution, filter/commit, no match keeps the previous value, empty field = empty value |
+| `PresetsDialogTest` | Profiles: unsaved edits survive switching profile, Save stores all of them, undoing an edit clears its mark, format editor mode by data source |
+| `FormatVariablesTest` | The *Variables* tooltip lists exactly the `@Define` variables, with translated group titles |
+| `RenamePanelSelectionTest` | Adding files selects the first row in both lists when nothing was selected and keeps an existing selection |
+| `ToolsTest` | Tool paths of Preferences → Tools: empty = automatic, the tool or its folder accepted, other files, missing, relative and malformed paths rejected |
+| `FpcalcLookupTest` | `tool.fpcalc` may be the program or its folder; the automatic location shown in Preferences ignores the preference |
 | `I18nTest` | The 6 languages have the same keys and parameters, every key used in the code exists, plurals, `--conflict ask` letters, default language |
 | `TrustStoresTest` | HTTPS trust: a chain is accepted if `cacerts` or the Windows store trusts it, rejected if none does |
 | `SettingsSecretsTest` | API key encryption (DPAPI on Windows), migration of a plain-text file without losing preferences, undecryptable value, re-encryption of FileRenamer's DPAPI keys |
@@ -194,7 +200,7 @@ instead of leaving it silent. Review the change against this list before closing
 - **Dependencies and runtime**: before a release check the known vulnerabilities (CVEs) of the libraries in `pom.xml`
   and of the JDK, update to fixed versions, and build the exe with a JDK on the latest quarterly security update.
 - **Tests**: every security fix or protection gets a test that reproduces the attack (see `WebRequestXmlTest`,
-  `FormatSecurityTest`, `BatchCollisionTest`, `ToolLookupTest`).
+  `FormatSecurityTest`, `BatchCollisionTest`, `ToolLookupTest`, `ToolsTest`).
 
 ## Texts and languages
 

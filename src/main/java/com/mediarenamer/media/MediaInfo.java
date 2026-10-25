@@ -164,10 +164,36 @@ public final class MediaInfo {
         return null;
     }
 
+    /**
+     * Where MediaInfo is found when no path is set (library first, then the command line), for the placeholder of
+     * Preferences → Tools; null if it is not installed.
+     */
+    public static Path detectedPath() {
+        // outside Windows the library comes from the system search (no path to show): only the command line is looked for
+        List<Path> l = new ArrayList<>(isWindows() ? candidates("MediaInfo.dll", false) : List.of());
+        l.addAll(candidates(isWindows() ? "MediaInfo.exe" : "mediainfo", false));
+        return l.isEmpty() ? null : l.get(0);
+    }
+
+    /**
+     * Forgets a failed library search and the cached readings, so that a path chosen in Preferences is used without
+     * restarting (a library already loaded stays in use until the application is closed).
+     */
+    public static synchronized void reset() {
+        if (lib == null) {
+            libFailed = false;
+        }
+        CACHE.clear();
+    }
+
     /** Candidate absolute paths: user preference, lib next to the application, MediaInfo installation, PATH. */
     static List<Path> candidates(String fileName) {
+        return candidates(fileName, true);
+    }
+
+    private static List<Path> candidates(String fileName, boolean withConfigured) {
         List<Path> list = new ArrayList<>();
-        String configured = Settings.get().get(Settings.MEDIAINFO_PATH);
+        String configured = withConfigured ? Settings.get().get(Settings.MEDIAINFO_PATH) : null;
         if (configured != null) {
             Path c = Paths.get(configured).toAbsolutePath();
             list.add(Files.isDirectory(c) ? c.resolve(fileName) : c);

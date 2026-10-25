@@ -23,7 +23,8 @@ command line.
 - **Matching**: one-to-one metric cascade (`Matcher`, see [MATCHING.md](docs/MATCHING.md)), *Strict* and *Opportunistic* modes,
   Airdate/DVD/Absolute/Digital/Story/Production orders.
 - **Format**: Groovy expressions, ~110 variables (`{n}`, `{y}`, `{vf}`, `{plex}`...)
-  and the helper methods (`.pad()`, `.colon()`, `.space()`, `.sortName()`...). Editor with live preview. Format code
+  and the helper methods (`.pad()`, `.colon()`, `.space()`, `.sortName()`...). Editor with live preview and the list
+  of every variable in its **ⓘ Variables** tooltip, also opened from the profile editor. Format code
   cannot run programs, write files or reach the network, and a block is stopped after 10 s (see
   [FORMAT.md](docs/FORMAT.md#security-restrictions)).
 - **Actions**: move/rename, copy, keeplink, symlink and test,
@@ -31,7 +32,10 @@ command line.
   keep both or **ask each time** comparing quality and size. Two files of one run never replace each other.
 - **Target folders** per type in Preferences (Movies, Series, Anime, Music, Other) and per profile:
   target = `<folder>/<format>`. The original extension is always kept unless the format sets another one.
-- **Profiles** (folder + format + source + order + mode + language + action) in the GUI and the CLI.
+- **Profiles** (folder + format + source + order + mode + language + action) in the GUI and the CLI. The data
+  language is chosen from a searchable list of every language (*Español (España)*), in Preferences and in profiles.
+- **Unsaved changes are kept** while moving between Preferences categories or profiles (marked in orange); closing
+  asks whether to save or discard them.
 - **Manual corrections**: manual search with posters, choosing the episode of a row and reordering
   the matches by dragging.
 - **Name pre-check** (invalid characters, reserved names, lengths, duplicates…) with a cleanup

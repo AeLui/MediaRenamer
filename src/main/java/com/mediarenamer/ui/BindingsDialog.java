@@ -5,12 +5,12 @@ import static com.mediarenamer.app.I18n.tr;
 import com.mediarenamer.format.MediaBindingBean;
 
 import java.awt.BorderLayout;
+import java.awt.Window;
 import java.io.File;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -21,8 +21,8 @@ import javax.swing.table.DefaultTableModel;
 /** "View Bindings": table with the value of each format variable for a matched file. */
 public class BindingsDialog extends JDialog {
 
-    public BindingsDialog(JFrame owner, Object match, File file) {
-        super(owner, tr("bindings.title", file == null ? "" : file.getName()), false);
+    public BindingsDialog(Window owner, Object match, File file) {
+        super(owner, tr("bindings.title", file == null ? "" : file.getName()), ModalityType.MODELESS);
         DefaultTableModel model = new DefaultTableModel(new Object[] { tr("bindings.variable"), tr("bindings.value") }, 0) {
             @Override
             public boolean isCellEditable(int r, int c) {

@@ -18,6 +18,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Window;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,7 +31,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
@@ -63,6 +63,32 @@ public class FormatDialog extends JDialog {
                 "{ any{ original }{ mediaTitle }{ fn } }", "{folder.name}/{fn}"));
     }
 
+    /**
+     * Every format variable, by group (the tooltip of the "Variables" link). The groups are i18n keys; the variables are
+     * format code and are not translated. A test checks that this list and the {@code @Define} names match.
+     */
+    static final Map<String, List<String>> VARIABLES = new LinkedHashMap<>();
+
+    static {
+        VARIABLES.put("format.vars.identification", List.of("n", "y", "ny", "t", "s", "e", "es", "s00", "e00", "sxe", "s00e00", "sn", "absolute", "special",
+                "regular", "d", "airdate", "startdate", "age", "id", "tmdbid", "tvdbid", "imdbid", "alias", "primaryTitle", "anime", "type"));
+        VARIABLES.put("format.vars.objects", List.of("episode", "episodes", "movie", "music", "series", "object", "info", "omdb", "self"));
+        VARIABLES.put("format.vars.metadata", List.of("genres", "genre", "rating", "votes", "certification", "collection", "director", "actors", "runtime",
+                "country", "language", "languages", "az", "decade", "AnimeList.TheTVDB", "XEM.scene"));
+        VARIABLES.put("format.vars.file", List.of("fn", "ext", "f", "file", "folder", "original", "drive", "home", "today", "bytes", "megabytes",
+                "gigabytes", "crc32", "i", "di", "dc", "vs", "source", "tags", "edition", "group", "s3d", "lang", "subt"));
+        VARIABLES.put("format.vars.mediainfo", List.of("vf", "vk", "hd", "vc", "ac", "cf", "channels", "af", "resolution", "width", "height", "ar", "ws", "hdr",
+                "dovi", "bitdepth", "fps", "khz", "duration", "seconds", "minutes", "hours", "bitrate", "vbr", "abr", "kbps", "mbps", "mediaTitle",
+                "audioLanguages", "textLanguages", "media", "video[0].Format", "audio", "text", "menu"));
+        VARIABLES.put("format.vars.music", List.of("artist", "albumArtist", "album", "pi", "pn", "medium"));
+        VARIABLES.put("format.vars.servers", List.of("plex", "plex.id", "jellyfin", "jellyfin.id", "emby", "emby.id", "kodi", "plex.name", "plex.tail"));
+    }
+
+    /** Helper methods and functions shown at the end of the tooltip (format code, not translated). */
+    private static final List<String> METHODS = List.of("{n.pad(2)}", "{n.lower()}", "{n.upper()}", "{n.space('.')}", "{n.colon(' - ')}", "{n.ascii()}",
+            "{n.sortName()}", "{t.truncate(40)}", "{n.replace('a', 'b')}", "{fn.match(/(\\d{4})/)}", "{d.format('dd/MM/yyyy')}", "{genres.joining(', ')}",
+            "{vf.match('2160p':'4K')}", "{any{a}{b}}", "{allOf{vf}{vc}.join(' ')}");
+
     private final RSyntaxTextArea editor = new RSyntaxTextArea(4, 60);
     private final JLabel preview = new JLabel(" ");
     private final JLabel status = new JLabel(" ");
@@ -72,8 +98,21 @@ public class FormatDialog extends JDialog {
     private final Timer timer;
     private String result;
 
-    public FormatDialog(JFrame owner, Mode mode, Object sample, File sampleFile) {
-        super(owner, tr("format.title"), true);
+    /** Editor of the format of a mode (main window): it starts with the mode's current format. */
+    public FormatDialog(Window owner, Mode mode, Object sample, File sampleFile) {
+        this(owner, mode, mode.getFormat(), true, sample, sampleFile);
+    }
+
+    /**
+     * Editor of a profile's format: it starts with that format and the mode is fixed (it follows the profile's data
+     * source), with a fictitious sample of that mode.
+     */
+    static FormatDialog forProfile(Window owner, Mode mode, String format) {
+        return new FormatDialog(owner, mode, format, false, null, null);
+    }
+
+    private FormatDialog(Window owner, Mode mode, String format, boolean modeEditable, Object sample, File sampleFile) {
+        super(owner, tr("format.title"), ModalityType.APPLICATION_MODAL);
         this.sample = sample;
         this.sampleFile = sampleFile;
         setLayout(new BorderLayout(8, 8));
@@ -83,6 +122,10 @@ public class FormatDialog extends JDialog {
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         top.add(new JLabel(tr("format.mode")));
         modeBox.setSelectedItem(mode);
+        modeBox.setEnabled(modeEditable);
+        if (!modeEditable) {
+            modeBox.setToolTipText(tr("format.mode.profile"));
+        }
         modeBox.setRenderer(new javax.swing.DefaultListCellRenderer() {
             @Override
             public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> l, Object v, int i, boolean s, boolean f) {
@@ -96,12 +139,15 @@ public class FormatDialog extends JDialog {
         top.add(examples);
         top.add(new JLabel(tr("format.recent")));
         top.add(recent);
-        content.add(top, BorderLayout.NORTH);
+        JPanel north = new JPanel(new BorderLayout());
+        north.add(top, BorderLayout.CENTER);
+        north.add(variablesLink(), BorderLayout.EAST);
+        content.add(north, BorderLayout.NORTH);
 
         editor.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_GROOVY);
         editor.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
         editor.setHighlightCurrentLine(false);
-        editor.setText(mode.getFormat());
+        editor.setText(format);
         RTextScrollPane scroll = new RTextScrollPane(editor);
         scroll.setLineNumbersEnabled(false);
         content.add(scroll, BorderLayout.CENTER);
@@ -115,7 +161,7 @@ public class FormatDialog extends JDialog {
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton bindings = new JButton(tr("format.bindings"));
-        bindings.addActionListener(e -> new BindingsDialog(owner, sampleObject(), sampleFile()).setVisible(true));
+        bindings.addActionListener(e -> new BindingsDialog(this, sampleObject(), sampleFile()).setVisible(true));
         JButton reset = new JButton(tr("format.reset"));
         reset.addActionListener(e -> editor.setText(currentMode().getDefaultFormat()));
         JButton cancel = new JButton(tr("common.cancel"));
@@ -186,6 +232,55 @@ public class FormatDialog extends JDialog {
 
     public String getResult() {
         return result;
+    }
+
+    /**
+     * "Variables ⓘ" link: its tooltip lists every variable by group plus the common methods, and stays open while the
+     * mouse is on it; a click opens "View bindings" with the value of each variable for the sample.
+     */
+    private JLabel variablesLink() {
+        JLabel link = new JLabel(tr("format.vars"), Icons.info().withSize(16).withColor(Theme.ACCENT), JLabel.LEFT) {
+            /** Under the link and towards the left: the link is at the right edge, the list is wide. */
+            @Override
+            public java.awt.Point getToolTipLocation(java.awt.event.MouseEvent e) {
+                javax.swing.JToolTip tip = createToolTip();
+                tip.setTipText(getToolTipText());
+                return new java.awt.Point(getWidth() - tip.getPreferredSize().width, getHeight() + 4);
+            }
+        };
+        link.setForeground(Theme.ACCENT);
+        link.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+        link.setToolTipText(variablesTooltip());
+        link.addMouseListener(new java.awt.event.MouseAdapter() {
+            private int dismiss;
+
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                dismiss = javax.swing.ToolTipManager.sharedInstance().getDismissDelay();
+                javax.swing.ToolTipManager.sharedInstance().setDismissDelay(120_000);
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                javax.swing.ToolTipManager.sharedInstance().setDismissDelay(dismiss);
+            }
+
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                new BindingsDialog(FormatDialog.this, sampleObject(), sampleFile()).setVisible(true);
+            }
+        });
+        return link;
+    }
+
+    /** HTML of the variables tooltip (texts from the i18n bundles; variable names are fixed code). */
+    static String variablesTooltip() {
+        StringBuilder sb = new StringBuilder("<html><div style='width:520px'>");
+        VARIABLES.forEach((group, names) -> sb.append("<b>").append(tr(group)).append("</b><br>")
+                .append(String.join(" ", names.stream().map(n -> "{" + n + "}").toList())).append("<br><br>"));
+        sb.append("<b>").append(tr("format.vars.methods")).append("</b><br>").append(String.join(" ", METHODS)).append("<br><br><i>")
+                .append(tr("format.vars.hint")).append("</i></div></html>");
+        return sb.toString();
     }
 
     public Mode getMode() {

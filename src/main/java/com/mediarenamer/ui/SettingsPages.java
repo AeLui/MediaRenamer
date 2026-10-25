@@ -5,6 +5,8 @@ import static com.mediarenamer.app.I18n.tr;
 import com.mediarenamer.app.I18n;
 import com.mediarenamer.app.Settings;
 import com.mediarenamer.media.MediaInfo;
+import com.mediarenamer.media.Tools;
+import com.mediarenamer.web.AcoustIDClient;
 import com.mediarenamer.web.MediaServers;
 import com.mediarenamer.web.JellyfinClient;
 import com.mediarenamer.web.PlexClient;
@@ -15,11 +17,18 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -45,7 +54,8 @@ import javax.swing.text.JTextComponent;
  * field) and, when it applies, a button ("Get", "Choose…", "Test connection").
  *
  * The values start from the preferences, or from {@code initial} (the wizard keeps what was typed when it is rebuilt
- * in another language); {@link #save()} writes the text fields and the scan options of the media servers.
+ * in another language); {@link #save()} writes the text fields and the scan options of the media servers. Every option
+ * remembers its starting value, so {@link #isDirty(Category)} tells which categories have unsaved changes.
  */
 final class SettingsPages {
 
@@ -67,6 +77,13 @@ final class SettingsPages {
     /** Interface language: Locale.ROOT = automatic (the system's). Only on the General page. */
     private JComboBox<Locale> uiLanguage;
     private JCheckBox darkTheme;
+    /** Language of the downloaded data (Data services page). */
+    private LanguagePicker dataLanguage;
+    /** Category whose page is being built: the options created now belong to it. */
+    private Category building;
+    /** Per category, one check per option: true when it differs from its starting value. */
+    private final Map<Category, List<BooleanSupplier>> dirtyChecks = new EnumMap<>(Category.class);
+    private Runnable changeListener = () -> { };
 
     SettingsPages(Window owner) {
         this(owner, Map.of(), null);
@@ -91,6 +108,7 @@ final class SettingsPages {
 
     /** The page of a category (rows only: the caller adds its own title). */
     JComponent page(Category c) {
+        building = c;
         return switch (c) {
             case GENERAL -> general();
             case SERVICES -> services();
@@ -117,7 +135,9 @@ final class SettingsPages {
             }
         });
         g.row(tr("prefs.uiLanguage"), "info.uiLanguage", uiLanguage, null, false);
+        track(uiLanguage::getSelectedItem, r -> uiLanguage.addActionListener(e -> r.run()));
         darkTheme = new JCheckBox(tr("prefs.theme.dark"), Theme.isDark());
+        track(darkTheme::isSelected, r -> darkTheme.addItemListener(e -> r.run()));
         g.row(tr("prefs.theme"), "info.theme", darkTheme, null, false);
         return g.done();
     }
@@ -128,7 +148,11 @@ final class SettingsPages {
             JTextComponent f = text(api.settingsKey(), api.secret());
             g.row(tr(api.labelKey()), api.infoKey(), f, api.url() == null ? null : ApiService.getKeyButton(api.url()), true);
         }
-        g.row(tr("prefs.dataLanguage"), "info.dataLanguage", text(Settings.LANGUAGE, false), null, true);
+        // searchable list of every language; empty = the system language
+        dataLanguage = new LanguagePicker(tr("prefs.dataLanguage.auto", I18n.displayName(Locale.getDefault())));
+        dataLanguage.setTag(initial.containsKey(Settings.LANGUAGE) ? initial.get(Settings.LANGUAGE) : Settings.get().get(Settings.LANGUAGE));
+        track(dataLanguage::getTag, dataLanguage::onChange);
+        g.row(tr("prefs.dataLanguage"), "info.dataLanguage", dataLanguage, null, true);
         return g.done();
     }
 
@@ -219,6 +243,7 @@ final class SettingsPages {
     private JCheckBox scanBox(String key, String text) {
         JCheckBox box = new JCheckBox(text, scanInitial.get(key));
         scanBoxes.put(key, box);
+        track(box::isSelected, r -> box.addItemListener(e -> r.run()));
         return box;
     }
 
@@ -240,14 +265,22 @@ final class SettingsPages {
      * can carry names and errors from the server, so it is escaped and never interpreted as HTML.
      */
     static final class StatusLabel extends JLabel {
+        /** Wrap width (CSS px: Swing draws them about a third wider). */
+        private final int width;
+
         StatusLabel() {
+            this(320);
+        }
+
+        StatusLabel(int width) {
             super(" ");
+            this.width = width;
         }
 
         @Override
         public void setText(String text) {
             boolean empty = text == null || text.isBlank();
-            super.setText(empty ? " " : "<html><div style='width:320px'>" + text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;") + "</div></html>");
+            super.setText(empty ? " " : "<html><div style='width:" + width + "px'>" + text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;") + "</div></html>");
             // hidden while empty, so that it takes no room on the page
             setVisible(!empty);
         }
@@ -279,12 +312,68 @@ final class SettingsPages {
 
     private JComponent tools() {
         Grid g = new Grid();
-        g.row(tr("prefs.mediainfo"), "info.mediainfo", text(Settings.MEDIAINFO_PATH, false), null, true);
-        g.row(tr("prefs.fpcalc"), "info.fpcalc", text(Settings.FPCALC_PATH, false), null, true);
+        toolRow(g, "prefs.mediainfo", "info.mediainfo", Settings.MEDIAINFO_PATH, Tools.MEDIAINFO, MediaInfo.detectedPath(), "MediaInfo");
+        toolRow(g, "prefs.fpcalc", "info.fpcalc", Settings.FPCALC_PATH, Tools.FPCALC, AcoustIDClient.detectedFpcalc(), "fpcalc");
         JLabel status = new JLabel(tr("prefs.mediainfo.status", MediaInfo.isAvailable() ? tr("prefs.mediainfo.available") : tr("prefs.mediainfo.missing")));
         status.setForeground(Theme.secondaryText());
         g.wide(status);
         return g.done();
+    }
+
+    /**
+     * Path of an external tool: the field (empty = automatic, the placeholder says what was found), a "Choose…" button that
+     * opens a file chooser limited to the tool's file names, and a line that checks the typed path as it changes. The
+     * tool is never run from here: only its name and existence are checked.
+     */
+    private void toolRow(Grid g, String labelKey, String infoKey, String key, List<String> names, Path detected, String tool) {
+        JTextField f = (JTextField) text(key, false);
+        f.putClientProperty("JTextField.placeholderText", tr("prefs.tool.placeholder"));
+        f.putClientProperty("JTextField.showClearButton", true);
+        JButton choose = new JButton(tr("presets.folder.choose"), Icons.folder().withSize(16));
+        choose.addActionListener(e -> {
+            String start = f.getText().isBlank() ? (detected == null ? null : detected.toString()) : f.getText().trim();
+            javax.swing.JFileChooser fc = new javax.swing.JFileChooser();
+            if (start != null) {
+                java.io.File s = new java.io.File(start);
+                fc.setCurrentDirectory(s.isDirectory() ? s : s.getParentFile());
+            }
+            fc.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
+            fc.setAcceptAllFileFilterUsed(false);
+            fc.setFileFilter(new javax.swing.filechooser.FileFilter() {
+                @Override
+                public boolean accept(java.io.File file) {
+                    return file.isDirectory() || Tools.hasName(file.getName(), names);
+                }
+
+                @Override
+                public String getDescription() {
+                    return tool + " (" + String.join(", ", Tools.platformNames(names)) + ")";
+                }
+            });
+            fc.setDialogTitle(tr("prefs.tool.dialog", tool));
+            if (fc.showOpenDialog(owner) == javax.swing.JFileChooser.APPROVE_OPTION) {
+                f.setText(fc.getSelectedFile().getAbsolutePath());
+            }
+        });
+        g.row(tr(labelKey), infoKey, f, choose, true);
+        // narrower than the other status lines: it sits under the field and its button, in a page that must not scroll sideways
+        JLabel check = new StatusLabel(240);
+        g.wide(check);
+        onChange(() -> {
+            Tools.Status st = Tools.check(f.getText(), names);
+            // empty: the line says what the automatic search finds (the full path does not fit in the placeholder)
+            check.setText(switch (st) {
+                case AUTO -> detected == null ? tr("prefs.tool.auto.none") : tr("prefs.tool.auto", detected);
+                case OK -> tr("prefs.tool.ok", tool);
+                case MISSING -> tr("prefs.tool.missing");
+                case WRONG -> tr("prefs.tool.wrong", tool, String.join(", ", Tools.platformNames(names)));
+            });
+            check.setForeground(switch (st) {
+                case AUTO -> Theme.secondaryText();
+                case OK -> new Color(0x27AE60);
+                default -> new Color(0xD68910);
+            });
+        }, f);
     }
 
     /** Opens the API keys page of the Jellyfin server (the route depends on its version: asked in the background). */
@@ -315,13 +404,42 @@ final class SettingsPages {
         JTextComponent f = secret ? new JPasswordField(16) : new JTextField(16);
         f.setText(initial.containsKey(key) ? initial.get(key) : Settings.get().get(key, ""));
         fields.put(key, f);
+        track(() -> f.getText().trim(), r -> onChange(r, f));
         return f;
+    }
+
+    /**
+     * Remembers the starting value of an option of the page being built; listen registers the given runnable as its
+     * change listener (it tells the dialog to repaint its marks).
+     */
+    private void track(Supplier<Object> value, Consumer<Runnable> listen) {
+        Object start = value.get();
+        dirtyChecks.computeIfAbsent(building, c -> new ArrayList<>()).add(() -> !Objects.equals(start, value.get()));
+        listen.accept(() -> changeListener.run());
+    }
+
+    /** Runs r whenever any option changes (after the change). */
+    void setChangeListener(Runnable r) {
+        changeListener = r;
+    }
+
+    /** True if an option of the category differs from the value it had when the page was built. */
+    boolean isDirty(Category c) {
+        return dirtyChecks.getOrDefault(c, List.of()).stream().anyMatch(BooleanSupplier::getAsBoolean);
+    }
+
+    /** True if any category has unsaved changes. */
+    boolean isDirty() {
+        return dirtyChecks.keySet().stream().anyMatch(this::isDirty);
     }
 
     /** Typed values of the pages built so far (by settings key). */
     Map<String, String> values() {
         Map<String, String> v = new HashMap<>(initial);
         fields.forEach((k, f) -> v.put(k, f.getText().trim()));
+        if (dataLanguage != null) {
+            v.put(Settings.LANGUAGE, dataLanguage.getTag() == null ? "" : dataLanguage.getTag());
+        }
         return v;
     }
 

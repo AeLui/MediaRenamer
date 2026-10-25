@@ -151,14 +151,26 @@ com.mediarenamer
   and by `SetupWizard` (Data services and Media servers steps). The Media servers page has a Jellyfin section and,
   below a separator, a Plex one; the scan option of each is saved only with its URL and key/token. The Jellyfin "Get"
   button uses `JellyfinClient.apiKeysPage(url)` (route by server version). `SettingsPages.StatusLabel`: the status line
-  under *Test connection*, wrapped, hidden while empty and HTML-escaped (it may show server names).
+  under *Test connection* (and under each tool path), wrapped, hidden while empty and HTML-escaped (it may show server
+  names). Every option remembers its starting value (`track`), so `isDirty(Category)` tells `PreferencesDialog` which
+  categories to mark and whether closing must ask *Save / Discard / Cancel* (`PreferencesDialog.askUnsaved`, also used by
+  Profiles). The Tools page checks each path with `media.Tools.check` (name and existence only, never runs the tool) and
+  shows the automatic location (`MediaInfo.detectedPath()`, `AcoustIDClient.detectedFpcalc()`); saving calls
+  `MediaInfo.reset()` so a new path is tried without restarting.
+- `LanguagePicker`: editable `JComboBox` with every ISO 639-1 language and language-country pair of the JDK, shown by
+  name in the interface language; typing filters (`matches`, case and accents ignored), Enter/leaving the field
+  resolves the text (`resolve`), and text matching nothing restores the previous value. Used for the data language in
+  Preferences/wizard and the profile language.
 - `PlexSignIn`: the Plex *Sign in…* button (PIN sign-in in `SwingWorker`s, cancellable; fills token and, if empty, URL).
 - `ApiService`: the API key fields shared by `PreferencesDialog` and `SetupWizard` (settings key, label, info text for the
   ⓘ tooltip, "Get" URL) and the reusable "Test connection" button of the media servers (`serverTestButton`).
 - `AboutDialog`: version, author, credits, Java, data folder and notices; opened from the ⓘ button of the header or by
   clicking the version in the status bar.
-- Dialogs: `PresetsDialog`, `FormatDialog` (RSyntaxTextArea + preview evaluated in a `SwingWorker`, cancelled by the
-  next edit), `BindingsDialog`,
+- Dialogs: `PresetsDialog` (per-profile drafts compared with the form as first shown, so switching profile keeps
+  unsaved edits; modified entries drawn in `Theme.MODIFIED`; Save stores every draft; *Editor…* opens
+  `FormatDialog.forProfile` with the mode of the chosen data source), `FormatDialog` (RSyntaxTextArea + preview evaluated
+  in a `SwingWorker`, cancelled by the next edit; the *Variables* link lists `FormatDialog.VARIABLES` in its tooltip),
+  `BindingsDialog`,
   `HistoryDialog` (one table Date/Source/Target from `History.entries()`, newest first, pages of 50 rows, *Revert* of the
   selected rows and CSV export with `History.writeCsv`), `PreferencesDialog` (categories in a sidebar, see `SettingsPages`).
 - All network/MediaInfo work runs in a `SwingWorker`; questions to the user from background threads
