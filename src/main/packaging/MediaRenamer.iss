@@ -43,7 +43,7 @@ AppCopyright=Copyright (C) 2026 AeLiu. License: GPL-3.0-only
 AppPublisherURL=https://github.com/AeLui/MediaRenamer
 AppComments=Renames series, movies and music with online data
 VersionInfoVersion={#AppVersion}
-; Product name and version of setup.exe: SignPath checks them against the release (docs\CODE_SIGNING.md)
+; Product name and version shown in the properties of setup.exe
 VersionInfoProductName=MediaRenamer
 VersionInfoProductVersion={#AppVersion}
 VersionInfoProductTextVersion={#AppVersion}

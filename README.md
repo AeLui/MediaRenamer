@@ -68,7 +68,8 @@ command line.
 ## Download
 
 The installer (`MediaRenamer-<version>-setup.exe`) and the portable zip of every version are on the
-[Releases page](https://github.com/AeLui/MediaRenamer/releases). See the [Code signing policy](#code-signing-policy).
+[Releases page](https://github.com/AeLui/MediaRenamer/releases). They are not code-signed, so Windows may warn the first
+time you run them: see [Release integrity](#release-integrity).
 
 ## Windows installer and executable
 
@@ -127,7 +128,7 @@ java -jar target/MediaRenamer.jar -rename "D:/Downloads" -r --db TheMovieDB::TV 
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Status of each feature, by version |
 | [docs/THIRD_PARTY.md](docs/THIRD_PARTY.md) | Third-party components and their licenses, where the notices ship, Store listing text |
 | [docs/PRIVACY.md](docs/PRIVACY.md) | Which online services are contacted, when and with what data |
-| [docs/CODE_SIGNING.md](docs/CODE_SIGNING.md) | Code signing policy: what is signed, team roles, how a release is signed |
+| [docs/RELEASE_INTEGRITY.md](docs/RELEASE_INTEGRITY.md) | How a release is built and how to check a download (releases are not code-signed) |
 
 ## License
 
@@ -141,12 +142,12 @@ Any distributed copy or modified version must stay under the GPL v3 and come wit
 
 **Contributions**: by submitting a pull request you agree that your contribution is licensed under the GPL v3.
 
-## Code signing policy
+## Release integrity
 
-Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by
-[SignPath Foundation](https://signpath.org). The Windows executables and the installer of each release are built and
-signed by the [Release workflow](.github/workflows/release.yml) from this repository: see
-[docs/CODE_SIGNING.md](docs/CODE_SIGNING.md) for the team roles and what gets signed.
+Releases are not code-signed. The Windows executables, the zip and the installer of each release are built from the tag
+by the [Release workflow](.github/workflows/release.yml) of this repository on GitHub Actions, and GitHub publishes the
+SHA-256 digest of each file; the in-app update checks that digest before installing. See
+[docs/RELEASE_INTEGRITY.md](docs/RELEASE_INTEGRITY.md).
 
 ## Privacy
 

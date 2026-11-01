@@ -64,11 +64,10 @@ powershell -ExecutionPolicy Bypass -File scripts\build-exe.ps1
 - `-SkipBuild` reuses the existing `target/MediaRenamer.jar`; by default the version is the `pom.xml` one (without
   `-SNAPSHOT`) and `-Version X.Y.Z` forces it. To bump the version just change `<version>` in `pom.xml`: the window
   (`Settings.version()`, read from the jar manifest) and the User-Agent take it from there.
-- `-AppImageOnly` stops after the app-image (with its notices) and `-PackageOnly` builds only the zip and the installer
-  from the existing `dist\MediaRenamer`: the release workflow signs the launchers in between.
+
 - An `.msi` (for corporate/GPO deployment) would require the WiX Toolset and `jpackage --type msi` (not included).
 
-## Releases and code signing
+## Releases
 
 Development happens on `main`. Between releases `pom.xml` carries the next version with `-SNAPSHOT` (`2.8.0-SNAPSHOT`;
 the build scripts strip the suffix), and every finished change adds a line under `## [Unreleased]` in
@@ -78,18 +77,14 @@ annotated tag `vX.Y.Z`. A pushed tag is never moved: a broken release is fixed i
 
 Pushing a tag `v<version>` (equal to the `pom.xml` version) runs [`.github/workflows/release.yml`](../.github/workflows/release.yml)
 on a GitHub-hosted Windows runner: Maven build with the tests on SapMachine 21 (the bundled runtime, which must match
-`THIRD-PARTY-NOTICES.txt`), `build-exe.ps1 -AppImageOnly`, signing of `MediaRenamer.exe` and `MediaRenamer-cli.exe` in
-SignPath, `-PackageOnly`, signing of the installer, and the zip and the installer attached to the GitHub release of the
-tag (created if it does not exist). The release notes are the tag's section of `CHANGELOG.md` (the workflow stops if it
-is missing) plus the downloads and the signing attribution. It can also be run by hand (*Actions → Release → Run workflow*), which keeps the
-files as a workflow artifact.
+`THIRD-PARTY-NOTICES.txt`), `build-exe.ps1`, and the zip and the installer attached to the GitHub release of the tag
+(created if it does not exist). The release notes are the tag's section of `CHANGELOG.md` (the workflow stops if it is
+missing) plus the downloads and a link to [RELEASE_INTEGRITY.md](RELEASE_INTEGRITY.md). It can also be run by hand
+(*Actions → Release → Run workflow*), which keeps the files as a workflow artifact.
 
-Signing uses the free [SignPath Foundation](https://signpath.org) certificate for open source projects; its conditions
-(OSI license with no commercial dual licensing, every build on GitHub-hosted runners, product name and version set on
-every signed file, manual approval of each release, MFA) and the roles are in [CODE_SIGNING.md](CODE_SIGNING.md). The
-SignPath artifact configurations are versioned in `.signpath/artifact-configurations` (`app.xml`, `installer.xml`) and
-must be pasted into the SignPath project when they change. Without the `SIGNPATH_ORGANIZATION_ID` variable the workflow
-skips signing and publishes unsigned files. Any new online service must be added to [PRIVACY.md](PRIVACY.md).
+Releases are not code-signed: their integrity relies on being built by the workflow from the tag and on the SHA-256
+digest GitHub publishes for each release file, which the in-app update verifies (see
+[RELEASE_INTEGRITY.md](RELEASE_INTEGRITY.md)). Any new online service must be added to [PRIVACY.md](PRIVACY.md).
 
 ## Logo and icons
 

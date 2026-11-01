@@ -1,11 +1,5 @@
-# Builds, tests and (with SignPath configured) signs the Windows executables and the installer, and attaches them to
-# the GitHub release of the tag. See docs/CODE_SIGNING.md.
-#
-# SignPath settings (Settings > Secrets and variables > Actions); without SIGNPATH_ORGANIZATION_ID nothing is signed:
-#   variable SIGNPATH_ORGANIZATION_ID     SignPath organization id
-#   variable SIGNPATH_PROJECT_SLUG        optional, default "MediaRenamer"
-#   variable SIGNPATH_SIGNING_POLICY_SLUG optional, default "release-signing" ("test-signing" for test certificates)
-#   secret   SIGNPATH_API_TOKEN           API token of a SignPath CI user with submitter rights
+# Builds and tests the Windows executables and the installer and attaches them to the GitHub release of the tag.
+# Releases are not code-signed: see docs/RELEASE_INTEGRITY.md.
 name: Release
 
 on:
@@ -15,15 +9,11 @@ on:
 
 permissions:
   contents: write
-  actions: read
 
 jobs:
   build:
-    # SignPath only signs builds that ran entirely on GitHub-hosted runners
     runs-on: windows-latest
-    timeout-minutes: 120
-    env:
-      SIGN: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
 
@@ -44,7 +34,7 @@ jobs:
           }
           "version=$version" >> $env:GITHUB_OUTPUT
 
-      # The release text is the section of the version in CHANGELOG.md, plus the signing attribution SignPath requires
+      # The release text is the section of the version in CHANGELOG.md, plus the downloads
       - name: Release notes
         shell: pwsh
         run: |
@@ -57,8 +47,7 @@ jobs:
           $notes = "$section`n`n## Downloads`n`n" +
                    "- ``MediaRenamer-$version-setup.exe``: Windows installer`n" +
                    "- ``MediaRenamer-$version-windows.zip``: portable, unzip and run ``MediaRenamer.exe```n`n" +
-                   "[Code signing policy](https://github.com/${{ github.repository }}/blob/main/docs/CODE_SIGNING.md): " +
-                   "free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org)."
+                   "These files are not code-signed: see [Release integrity](https://github.com/${{ github.repository }}/blob/main/docs/RELEASE_INTEGRITY.md)."
           Set-Content -Path release-notes.md -Value $notes.TrimStart() -Encoding utf8
 
       - name: Inno Setup
@@ -69,96 +58,15 @@ jobs:
             if ($LASTEXITCODE -ne 0) { throw "Inno Setup could not be installed" }
           }
 
-      # Maven build with the tests, then jpackage
-      - name: Build the app-image
+      # Maven build with the tests, jpackage, the zip and the installer
+      - name: Build
         shell: pwsh
         run: |
-          scripts\build-exe.ps1 -AppImageOnly
+          scripts\build-exe.ps1
           $runtime = (Select-String -Path dist\MediaRenamer\runtime\release -Pattern '^JAVA_VERSION="(.*)"').Matches.Groups[1].Value
           if (-not (Select-String -Path THIRD-PARTY-NOTICES.txt -SimpleMatch "SapMachine $runtime" -Quiet)) {
             throw "THIRD-PARTY-NOTICES.txt does not describe the bundled runtime SapMachine ${runtime}: update its Java runtime section."
           }
-
-      - name: Stage the launchers to sign
-        if: env.SIGN == 'true'
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force sign\app | Out-Null
-          Copy-Item dist\MediaRenamer\MediaRenamer.exe, dist\MediaRenamer\MediaRenamer-cli.exe sign\app
-
-      - name: Upload the unsigned launchers
-        id: upload-app
-        if: env.SIGN == 'true'
-        uses: actions/upload-artifact@v6
-        with:
-          name: unsigned-launchers
-          path: sign/app/*
-          if-no-files-found: error
-
-      - name: Sign the launchers
-        if: env.SIGN == 'true'
-        uses: signpath/github-action-submit-signing-request@v3
-        with:
-          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
-          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
-          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG || 'MediaRenamer' }}
-          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG || 'release-signing' }}
-          artifact-configuration-slug: app
-          github-artifact-id: ${{ steps.upload-app.outputs.artifact-id }}
-          wait-for-completion: true
-          # Every release is approved by hand in SignPath
-          wait-for-completion-timeout-in-seconds: 3600
-          output-artifact-directory: sign/app-signed
-          parameters: |
-            version: "${{ steps.version.outputs.version }}"
-
-      - name: Put the signed launchers in the app-image
-        if: env.SIGN == 'true'
-        shell: pwsh
-        run: |
-          foreach ($exe in 'MediaRenamer.exe', 'MediaRenamer-cli.exe') {
-            $signed = Join-Path sign\app-signed $exe
-            if ((Get-AuthenticodeSignature $signed).Status -ne 'Valid') { throw "$exe came back from SignPath without a valid signature" }
-            Copy-Item $signed dist\MediaRenamer -Force
-          }
-
-      - name: Build the zip and the installer
-        shell: pwsh
-        run: scripts\build-exe.ps1 -PackageOnly
-
-      - name: Upload the unsigned installer
-        id: upload-installer
-        if: env.SIGN == 'true'
-        uses: actions/upload-artifact@v6
-        with:
-          name: unsigned-installer
-          path: dist/MediaRenamer-${{ steps.version.outputs.version }}-setup.exe
-          if-no-files-found: error
-
-      - name: Sign the installer
-        if: env.SIGN == 'true'
-        uses: signpath/github-action-submit-signing-request@v3
-        with:
-          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
-          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
-          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG || 'MediaRenamer' }}
-          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG || 'release-signing' }}
-          artifact-configuration-slug: installer
-          github-artifact-id: ${{ steps.upload-installer.outputs.artifact-id }}
-          wait-for-completion: true
-          wait-for-completion-timeout-in-seconds: 3600
-          output-artifact-directory: sign/installer-signed
-          parameters: |
-            version: "${{ steps.version.outputs.version }}"
-
-      - name: Put the signed installer in dist
-        if: env.SIGN == 'true'
-        shell: pwsh
-        run: |
-          $setup = "MediaRenamer-${{ steps.version.outputs.version }}-setup.exe"
-          $signed = Join-Path sign\installer-signed $setup
-          if ((Get-AuthenticodeSignature $signed).Status -ne 'Valid') { throw "$setup came back from SignPath without a valid signature" }
-          Copy-Item $signed dist -Force
 
       - name: Upload the release files
         uses: actions/upload-artifact@v6

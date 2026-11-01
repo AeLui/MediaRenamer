@@ -37,8 +37,8 @@ and the versions follow [Semantic Versioning](https://semver.org/). The section 
 
 ### Added
 
-- Release workflow that builds and signs the executables and the installer with SignPath Foundation.
-- [Code signing policy](docs/CODE_SIGNING.md) and [privacy policy](docs/PRIVACY.md).
+- Release workflow that builds the executables and the installer on GitHub Actions and attaches them to the release.
+- [Release integrity](docs/RELEASE_INTEGRITY.md) and [privacy policy](docs/PRIVACY.md) pages.
 
 ### Changed
 
