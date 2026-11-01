@@ -296,28 +296,41 @@ public class FormatDialog extends JDialog {
         if (sample != null && RenamePanel.modeOf(sample) == currentMode()) {
             return sample;
         }
-        SeriesInfo s = new SeriesInfo("TheMovieDB::TV", SortOrder.Airdate, Locale.US, 1396);
-        s.setName("Breaking Bad");
-        s.setStartDate(new SimpleDate(2008, 1, 20));
-        s.setGenres(List.of("Drama", "Crime"));
-        return switch (currentMode()) {
-            case Episode -> new Episode("Breaking Bad", 1, 1, "Pilot", 1, null, new SimpleDate(2008, 1, 20), 62085, s);
-            case Movie -> new Movie("Avatar", List.of(), 2009, 499549, 19995, Locale.US);
-            case Music -> new com.mediarenamer.web.AudioTrack("Queen", "Bohemian Rhapsody", "A Night at the Opera", "Queen", "Bohemian Rhapsody",
-                    new SimpleDate(1975, 11, 21), 1, 1, 11, 12, null, "Rock");
-            case File -> sampleFile();
-        };
+        return fictionalSample(currentMode());
     }
 
     private File sampleFile() {
         if (sampleFile != null && sample != null && RenamePanel.modeOf(sample) == currentMode()) {
             return sampleFile;
         }
-        return new File(switch (currentMode()) {
-            case Episode -> "Breaking.Bad.S01E01.720p.BluRay.x264-DEMAND.mkv";
-            case Movie -> "Avatar.2009.1080p.BluRay.x264-SPARKS.mkv";
-            case Music -> "01 bohemian rhapsody.mp3";
-            case File -> sampleFile != null ? sampleFile.getPath() : "ejemplo.mkv";
+        return currentMode() == Mode.File && sampleFile != null ? sampleFile : fictionalSampleFile(currentMode());
+    }
+
+    /**
+     * Invented sample of each mode, used when no match is selected: no real titles, names or online ids (the preview
+     * shows no third-party content, and online-only variables stay empty instead of loading another title's data).
+     */
+    static Object fictionalSample(Mode mode) {
+        SeriesInfo s = new SeriesInfo("TheMovieDB::TV", SortOrder.Airdate, Locale.US, 0);
+        s.setName("Lanterns of Vell");
+        s.setStartDate(new SimpleDate(2021, 9, 3));
+        s.setGenres(List.of("Drama", "Fantasy"));
+        return switch (mode) {
+            case Episode -> new Episode("Lanterns of Vell", 1, 1, "The Ferryman's Toll", 1, null, new SimpleDate(2021, 9, 3), null, s);
+            case Movie -> new Movie("Glass Harbor", List.of(), 2024, 0, 0, Locale.US);
+            case Music -> new com.mediarenamer.web.AudioTrack("Marlow Reyes", "Northbound Static", "Harbor Lights", "Marlow Reyes", "Northbound Static",
+                    new SimpleDate(2019, 5, 17), 1, 1, 3, 12, null, "Indie Folk");
+            case File -> fictionalSampleFile(mode);
+        };
+    }
+
+    /** File name that goes with {@link #fictionalSample(Mode)}. */
+    static File fictionalSampleFile(Mode mode) {
+        return new File(switch (mode) {
+            case Episode -> "Lanterns.of.Vell.S01E01.720p.BluRay.x264-DEMAND.mkv";
+            case Movie -> "Glass.Harbor.2024.1080p.BluRay.x264-SPARKS.mkv";
+            case Music -> "03 northbound static.mp3";
+            case File -> "ejemplo.mkv";
         });
     }
 

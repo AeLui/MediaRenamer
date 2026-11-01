@@ -111,7 +111,7 @@ MediaRenamer is opened. Do not confuse it with the *data language* (titles, over
 | Changing only the name of a row | Double click the new name, or right click → *Edit name* |
 | Removing the match of a row | Right click → *Clear match* |
 | Seeing the format variables of a row | **Bindings** (or right click → *Show bindings*) |
-| Changing the format | **Format** opens the editor with live preview. The **ⓘ Variables** link (top right) lists every variable by group and the common methods in its tooltip; clicking it shows the value of each variable for the sample file |
+| Changing the format | **Format** opens the editor with live preview. The **ⓘ Variables** link (top right) lists every variable by group and the common methods in its tooltip; clicking it shows the value of each variable for the sample file. Without a selected match the preview uses an invented sample (movie *Glass Harbor (2024)*, series *Lanterns of Vell*, song *Marlow Reyes - Northbound Static*); it has no online ids, so variables that need online data (director, genres…) stay empty there |
 
 ![Choose episode](img/screenshot-episode.png)
 
@@ -129,7 +129,7 @@ Preferences option is used). The rename action is not part of a profile: it is a
 
 - **Format → Editor…** opens the same format editor as the main window, with live preview, starting from the
   profile's format. Its mode is fixed by the profile's data source (TheMovieDB → Movies, TheMovieDB::TV → Series,
-  ID3 → Music…), with a sample file of that mode. **Use format** copies the result to the profile.
+  ID3 → Music…), with the invented sample file of that mode. **Use format** copies the result to the profile.
 - **Language** is the same searchable list as in Preferences; its first entry is *(don't change)*.
 - **New** adds an untitled profile to the list. It is not stored until you save it.
 - **Unsaved changes** are kept while you move from one profile to another. A profile with changes is shown in orange
