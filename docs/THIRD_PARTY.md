@@ -14,7 +14,7 @@ from the artifact itself (the jar's `META-INF`, or the upstream `LICENSE` at the
 | RSyntaxTextArea | 3.5.3 | BSD-3-Clause | Robert Futrell | https://github.com/bobbylight/RSyntaxTextArea |
 | Java Native Access (JNA) | 5.15.0 | Apache-2.0 OR LGPL-2.1-or-later (used under Apache-2.0) | Timothy Wall and contributors | https://github.com/java-native-access/jna |
 | ↳ libffi (inside the JNA native libraries) | — | MIT | Anthony Green, Red Hat, Inc. and others | https://sourceware.org/libffi/ |
-| Java runtime: SapMachine (OpenJDK build) | 21.0.13.0.2 | GPL-2.0-only WITH Classpath-exception-2.0 (+ notices in `runtime\legal`) | Oracle and/or its affiliates, SAP SE and others | https://sapmachine.io |
+| Java runtime: SapMachine (OpenJDK build) | 21.0.13.0.3 | GPL-2.0-only WITH Classpath-exception-2.0 (+ notices in `runtime\legal`) | Oracle and/or its affiliates, SAP SE and others | https://sapmachine.io |
 | Inno Setup (installer only, not installed) | 6 | Inno Setup License (permissive) | Jordan Russell, Martijn Laan | https://jrsoftware.org/isinfo.php |
 
 Not redistributed: MediaInfo and fpcalc (Chromaprint) are optional programs the user installs; the logo and icons are

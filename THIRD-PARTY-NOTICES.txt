@@ -25,7 +25,7 @@ Summary
   Java Native Access (JNA)     5.15.0        Apache-2.0 OR LGPL-2.1-or-later
                                              (used under Apache-2.0)
     in JNA: libffi             native        MIT
-  Java runtime: SapMachine     21.0.13.0.2   GPL-2.0-only WITH
+  Java runtime: SapMachine     21.0.13.0.3   GPL-2.0-only WITH
     (OpenJDK build, SAP SE)                  Classpath-exception-2.0
                                              (+ notices in runtime\legal)
   Inno Setup (installer only)  6             Inno Setup License (permissive)
@@ -42,8 +42,8 @@ Where to find the notices
     Xerces, Xalan...).
 
 Source code of the Java runtime: the runtime is an unmodified subset (made with
-jlink) of SapMachine 21.0.13.0.2; its complete source code is published by SAP
-at https://github.com/SAP/SapMachine (tag sapmachine-21.0.13.0.2).
+jlink) of SapMachine 21.0.13.0.3; its complete source code is published by SAP
+at https://github.com/SAP/SapMachine (tag sapmachine-21.0.13.0.3).
 
 Not redistributed: MediaInfo and fpcalc (Chromaprint) are optional external
 programs that the user installs separately; MediaRenamer only calls them. The
@@ -265,11 +265,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 ===============================================================================
-6. Java runtime: SapMachine 21.0.13.0.2 (OpenJDK)
+6. Java runtime: SapMachine 21.0.13.0.3 (OpenJDK)
 ===============================================================================
 
 MediaRenamer runs on a reduced Java runtime image (folder "runtime"), produced
-with jlink/jpackage from SapMachine 21.0.13.0.2+1-LTS, a build of OpenJDK by
+with jlink/jpackage from SapMachine 21.0.13.0.3 (LTS), a build of OpenJDK by
 SAP SE. The two launchers (MediaRenamer.exe and MediaRenamer-cli.exe) are the
 OpenJDK jpackage application launcher.
 
@@ -279,7 +279,7 @@ License:  GNU General Public License version 2 with the Classpath Exception
           OpenJDK Assembly Exception. The runtime also contains third-party
           code under its own licenses: see runtime\legal\<module>\*.md.
 URL:      https://sapmachine.io
-Source:   https://github.com/SAP/SapMachine (tag sapmachine-21.0.13.0.2)
+Source:   https://github.com/SAP/SapMachine (tag sapmachine-21.0.13.0.3)
 
 --- LICENSE (legal/java.base/LICENSE of the runtime) ---
 
