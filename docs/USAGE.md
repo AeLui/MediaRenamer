@@ -183,10 +183,11 @@ move between pages, next to *Page n of N · total renames*.
 ## About MediaRenamer
 
 The discreet **ⓘ** button at the top right (or a click on the version at the bottom right) opens *About MediaRenamer*:
-version, author (AeLiu), Java version,
-data folder (with a button to open it), libraries and the notices of the data services. **Third-party licenses**
+version, author (AeLiu), license (**GNU GPL v3**: click it to read the full text, the same as `LICENSE.txt` next to the
+exe), Java version, data folder (with a button to open it), libraries and the notices of the data services. **Third-party licenses**
 (bottom left) shows the licenses and notices of the bundled libraries and Java runtime (the same text as
 `THIRD-PARTY-NOTICES.txt` next to the exe; the Java runtime notices are also in the `runtime\legal` folder).
+**♥ Sponsor**, next to it, opens the author's GitHub Sponsors page in the browser (the address is shown in its tooltip).
 
 ![About](img/screenshot-about.png)
 

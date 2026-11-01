@@ -164,9 +164,13 @@ com.mediarenamer
 - `PlexSignIn`: the Plex *Sign in…* button (PIN sign-in in `SwingWorker`s, cancellable; fills token and, if empty, URL).
 - `ApiService`: the API key fields shared by `PreferencesDialog` and `SetupWizard` (settings key, label, info text for the
   ⓘ tooltip, "Get" URL) and the reusable "Test connection" button of the media servers (`serverTestButton`).
-- `AboutDialog`: version, author, credits, Java, data folder and notices; opened from the ⓘ button of the header or by
-  clicking the version in the status bar. Its *Third-party licenses* button opens `ThirdPartyLicensesDialog`, which shows
-  `META-INF/THIRD-PARTY-NOTICES.txt` (copied by Maven from the repository root; read bounded, shown as plain text).
+- `AboutDialog`: version, author, license, credits, Java, data folder and notices; opened from the ⓘ button of the
+  header or by clicking the version in the status bar. Its *Third-party licenses* button opens `ThirdPartyLicensesDialog`,
+  which shows `META-INF/THIRD-PARTY-NOTICES.txt` (copied by Maven from the repository root; read bounded, shown as plain
+  text); the *GNU GPL v3* link opens the same dialog with `ThirdPartyLicensesDialog.ownLicense`, showing
+  `META-INF/mediarenamer/LICENSE` (the root `LICENSE`, in its own folder so it never clashes with the dependencies'
+  `META-INF/LICENSE` in the shaded jar). *♥ Sponsor* opens the fixed `AboutDialog.SPONSOR_URL` (GitHub Sponsors) in the
+  browser.
 - Dialogs: `PresetsDialog` (per-profile drafts compared with the form as first shown, so switching profile keeps
   unsaved edits; modified entries drawn in `Theme.MODIFIED`; Save stores every draft; *Editor…* opens
   `FormatDialog.forProfile` with the mode of the chosen data source), `FormatDialog` (RSyntaxTextArea + preview evaluated

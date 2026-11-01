@@ -25,26 +25,38 @@ import javax.swing.KeyStroke;
 /**
  * "Third-party licenses": the notices of the redistributed libraries and of the Java runtime
  * (THIRD-PARTY-NOTICES.txt, bundled in the jar as {@value #RESOURCE}). Shown as plain text, never as HTML.
+ * Also shows MediaRenamer's own license (LICENSE, bundled as {@value #LICENSE_RESOURCE}).
  */
 public class ThirdPartyLicensesDialog extends JDialog {
 
     static final String RESOURCE = "/META-INF/THIRD-PARTY-NOTICES.txt";
-    /** Upper bound of what is read: the real file is about 60 KB. */
+    static final String LICENSE_RESOURCE = "/META-INF/mediarenamer/LICENSE";
+    /** Upper bound of what is read: the real files are about 60 KB at most. */
     static final int MAX_BYTES = 1 << 20;
 
     final JTextArea text;
 
     public ThirdPartyLicensesDialog(Window owner) {
-        super(owner, tr("about.licenses.title"), ModalityType.APPLICATION_MODAL);
+        this(owner, "about.licenses", RESOURCE);
+    }
+
+    /** MediaRenamer's own license (GNU GPL v3). */
+    public static ThirdPartyLicensesDialog ownLicense(Window owner) {
+        return new ThirdPartyLicensesDialog(owner, "about.license", LICENSE_RESOURCE);
+    }
+
+    /** {@code keys}: prefix of the {@code .title}, {@code .intro} and {@code .missing} texts. */
+    private ThirdPartyLicensesDialog(Window owner, String keys, String resource) {
+        super(owner, tr(keys + ".title"), ModalityType.APPLICATION_MODAL);
         JPanel content = new JPanel(new BorderLayout(0, 10));
         content.setBorder(BorderFactory.createEmptyBorder(14, 16, 12, 16));
 
-        JLabel intro = new JLabel("<html><div style='width:560px'>" + tr("about.licenses.intro") + "</div></html>");
+        JLabel intro = new JLabel("<html><div style='width:560px'>" + tr(keys + ".intro") + "</div></html>");
         intro.setForeground(Theme.secondaryText());
         content.add(intro, BorderLayout.NORTH);
 
-        String notices = load();
-        text = new JTextArea(notices != null ? notices : tr("about.licenses.missing"));
+        String notices = load(resource);
+        text = new JTextArea(notices != null ? notices : tr(keys + ".missing"));
         text.setEditable(false);
         text.setFont(new Font(Font.MONOSPACED, Font.PLAIN, text.getFont().getSize()));
         text.setCaretPosition(0);
@@ -69,7 +81,12 @@ public class ThirdPartyLicensesDialog extends JDialog {
 
     /** The bundled notices, or {@code null} if the resource is missing, unreadable or larger than {@link #MAX_BYTES}. */
     static String load() {
-        try (InputStream in = ThirdPartyLicensesDialog.class.getResourceAsStream(RESOURCE)) {
+        return load(RESOURCE);
+    }
+
+    /** A bundled text resource, or {@code null} if it is missing, unreadable or larger than {@link #MAX_BYTES}. */
+    static String load(String resource) {
+        try (InputStream in = ThirdPartyLicensesDialog.class.getResourceAsStream(resource)) {
             return in == null ? null : read(in);
         } catch (IOException e) {
             return null;

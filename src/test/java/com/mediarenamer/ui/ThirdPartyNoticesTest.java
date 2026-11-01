@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Third-party notices: the file covers every redistributed library, reproduces the NOTICE and bundled license files
  * of their jars, travels inside the jar, is shipped by the packaging scripts and is reachable from "About".
+ * The same for MediaRenamer's own license (LICENSE, GNU GPL v3).
  */
 class ThirdPartyNoticesTest {
 
@@ -53,6 +54,16 @@ class ThirdPartyNoticesTest {
         assertNotNull(bundled, ThirdPartyLicensesDialog.RESOURCE + " must be in the jar");
         assertEquals(Files.readString(ROOT_FILE, StandardCharsets.UTF_8), bundled);
         assertTrue(bundled.length() < ThirdPartyLicensesDialog.MAX_BYTES);
+    }
+
+    @Test
+    void ownLicenseIsTheGplV3AndTravelsInsideTheJar() throws Exception {
+        String license = Files.readString(Path.of("LICENSE"), StandardCharsets.UTF_8);
+        assertTrue(license.contains("GNU GENERAL PUBLIC LICENSE") && license.contains("Version 3, 29 June 2007"));
+        assertEquals(license, ThirdPartyLicensesDialog.load(ThirdPartyLicensesDialog.LICENSE_RESOURCE));
+        String pom = Files.readString(Path.of("pom.xml"), StandardCharsets.UTF_8);
+        assertTrue(pom.contains("<name>GPL-3.0-only</name>"), "the pom declares the license");
+        assertNull(ThirdPartyLicensesDialog.load("/META-INF/mediarenamer/missing"));
     }
 
     @Test
@@ -114,8 +125,12 @@ class ThirdPartyNoticesTest {
         assertTrue(script.contains("THIRD-PARTY-NOTICES.txt"), "build-exe.ps1 copies the notices into the app-image");
         assertTrue(script.contains("runtime\\legal\\java.base\\LICENSE"), "build-exe.ps1 checks the runtime notices");
         assertTrue(script.contains("MediaRenamer/$notices"), "build-exe.ps1 checks the zip");
+        assertTrue(script.contains("Copy-Item (Join-Path $root \"LICENSE\") (Join-Path $appDir $license)"), "build-exe.ps1 ships LICENSE.txt");
+        assertTrue(script.contains("MediaRenamer/$license"), "build-exe.ps1 checks LICENSE.txt in the zip");
+        assertFalse(script.contains("Personal use"), "the exe copyright names the GPL");
         String iss = Files.readString(Path.of("src", "main", "packaging", "MediaRenamer.iss"), StandardCharsets.UTF_8);
         assertTrue(iss.contains("#if !FileExists(AddBackslash(SourceDir) + \"THIRD-PARTY-NOTICES.txt\")"), "the installer refuses to build without them");
+        assertTrue(iss.contains("#if !FileExists(AddBackslash(SourceDir) + \"LICENSE.txt\")"), "nor without the GPL");
     }
 
     @Test
@@ -152,6 +167,74 @@ class ThirdPartyNoticesTest {
             AboutDialog about = new AboutDialog(null);
             try {
                 assertEquals("Licencias de terceros", about.licenses.getText());
+            } finally {
+                about.dispose();
+            }
+        });
+    }
+
+    @Test
+    void aboutShowsTheGplAndOpensItsText() throws Exception {
+        assumeFalse(GraphicsEnvironment.isHeadless());
+        I18n.setLocale(Locale.ENGLISH);
+        SwingUtilities.invokeAndWait(() -> {
+            AboutDialog about = new AboutDialog(null);
+            try {
+                assertEquals("GNU GPL v3", about.license.getText());
+                assertEquals(1, about.license.getActionListeners().length);
+                List<String> texts = new ArrayList<>();
+                collectLabels(about.getContentPane(), texts);
+                assertTrue(texts.contains("License"), "labels found: " + texts);
+                assertTrue(texts.stream().anyMatch(t -> t.contains("Free software under the GNU GPL v3")), "notice: " + texts);
+                assertFalse(texts.stream().anyMatch(t -> t.contains("personal use")), "no personal-use restriction: " + texts);
+                ThirdPartyLicensesDialog d = ThirdPartyLicensesDialog.ownLicense(about);
+                try {
+                    assertEquals("MediaRenamer license", d.getTitle());
+                    assertTrue(d.text.getText().contains("GNU GENERAL PUBLIC LICENSE"));
+                    assertFalse(d.text.isEditable());
+                    assertEquals(0, d.text.getCaretPosition(), "opens at the top");
+                } finally {
+                    d.dispose();
+                }
+            } finally {
+                about.dispose();
+            }
+        });
+        I18n.setLocale(Locale.forLanguageTag("es"));
+        SwingUtilities.invokeAndWait(() -> {
+            AboutDialog about = new AboutDialog(null);
+            try {
+                List<String> texts = new ArrayList<>();
+                collectLabels(about.getContentPane(), texts);
+                assertTrue(texts.contains("Licencia"), "labels found: " + texts);
+            } finally {
+                about.dispose();
+            }
+        });
+    }
+
+    @Test
+    void aboutHasASponsorLinkToTheFixedGitHubSponsorsPage() throws Exception {
+        assumeFalse(GraphicsEnvironment.isHeadless());
+        assertEquals("https://github.com/sponsors/AFBenot", AboutDialog.SPONSOR_URL);
+        String funding = Files.readString(Path.of(".github", "FUNDING.yml"), StandardCharsets.UTF_8);
+        assertTrue(funding.contains("github: AFBenot"), "the repository Sponsor button points to the same account");
+        I18n.setLocale(Locale.ENGLISH);
+        SwingUtilities.invokeAndWait(() -> {
+            AboutDialog about = new AboutDialog(null);
+            try {
+                assertEquals("\u2665 Sponsor", about.sponsor.getText());
+                assertEquals(AboutDialog.SPONSOR_URL, about.sponsor.getToolTipText());
+                assertEquals(1, about.sponsor.getActionListeners().length);
+            } finally {
+                about.dispose();
+            }
+        });
+        I18n.setLocale(Locale.forLanguageTag("es"));
+        SwingUtilities.invokeAndWait(() -> {
+            AboutDialog about = new AboutDialog(null);
+            try {
+                assertEquals("\u2665 Patrocinar", about.sponsor.getText());
             } finally {
                 about.dispose();
             }

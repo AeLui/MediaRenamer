@@ -56,9 +56,10 @@ powershell -ExecutionPolicy Bypass -File scripts\build-exe.ps1
   through reflection or as a service (`jdk.crypto.mscapi`, `jdk.localedata`) are **not** detected by `jdeps`.
 - If the exe in `dist\MediaRenamer` is running, the script stops before deleting anything (Windows locks its
   files and the folder would be left half-deleted). Close the application and run it again.
-- Third-party notices: the script copies `THIRD-PARTY-NOTICES.txt` next to the exe (so the zip and the installer carry
-  it), checks that it and `runtime\legal` (kept by `jlink`) are in the folder and the zip, and warns if the notices do
-  not mention the bundled Java version; `MediaRenamer.iss` refuses to compile without them. When adding or updating a
+- License and third-party notices: the script copies `LICENSE` (as `LICENSE.txt`) and `THIRD-PARTY-NOTICES.txt` next
+  to the exe (so the zip and the installer carry them), checks that they and `runtime\legal` (kept by `jlink`) are in the
+  folder and the zip, and warns if the notices do not mention the bundled Java version; `MediaRenamer.iss` refuses to
+  compile without them. The GPL v3 requires its text to accompany every copy of the program. When adding or updating a
   dependency or the JDK, update the notices: see [THIRD_PARTY.md](THIRD_PARTY.md#maintenance).
 - `-SkipBuild` reuses the existing `target/MediaRenamer.jar`; by default the version is the `pom.xml` one (without
   `-SNAPSHOT`) and `-Version X.Y.Z` forces it. To bump the version just change `<version>` in `pom.xml`: the window
@@ -126,7 +127,7 @@ take them from the app run with `-Dmediarenamer.data=<temp folder>`, never with 
 | `SaveSafetyTest` | Atomic writes, history round trip with special characters, unique profile ids |
 | `JellyfinInsecureUrlTest` | Plain http warning only for servers that do not look local |
 | `PlexClientTest` | Plex scan (sections + refresh per library, token only in the header, hostile library keys ignored), *Test connection*, wrong token, server down, default port; plex.tv PIN sign-in (polling, cancel, expiry, hostile tokens rejected), own servers only with safe addresses best first (relays, `file:`, user info rejected), address probing without token, bounded candidates, redacted logs; against a local `HttpServer` |
-| `ThirdPartyNoticesTest` | `THIRD-PARTY-NOTICES.txt` lists every runtime dependency of `pom.xml` with its version, reproduces the jars' `META-INF/NOTICE` and Groovy's bundled ANTLR/ASM licenses and the OpenJDK license, travels in the jar, is shipped by `build-exe.ps1`/`MediaRenamer.iss`; bounded reading; *About* → *Third-party licenses* shows it as plain text (English and Spanish) |
+| `ThirdPartyNoticesTest` | `THIRD-PARTY-NOTICES.txt` lists every runtime dependency of `pom.xml` with its version, reproduces the jars' `META-INF/NOTICE` and Groovy's bundled ANTLR/ASM licenses and the OpenJDK license, travels in the jar, is shipped by `build-exe.ps1`/`MediaRenamer.iss`; bounded reading; *About* → *Third-party licenses* shows it as plain text (English and Spanish). The same for `LICENSE` (GPL v3, declared in `pom.xml`): in the jar, shipped as `LICENSE.txt`, *About* shows *License: GNU GPL v3* and opens its text, and the notice no longer says "for personal use". *About* → *♥ Sponsor* points to the same GitHub Sponsors account as `.github/FUNDING.yml` |
 | `AppFoldersMigrationTest` | copy of the FileRenamer data folder: everything copied and the old one kept, an existing folder is never overwritten, nothing to migrate, interrupted copy repeated |
 
 The tests use no network (the Jellyfin and Plex ones start a server on `127.0.0.1`) **and none of your preferences**: `pom.xml`

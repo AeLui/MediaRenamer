@@ -23,6 +23,10 @@
 #if !FileExists(AddBackslash(SourceDir) + "THIRD-PARTY-NOTICES.txt")
   #error THIRD-PARTY-NOTICES.txt is missing from SourceDir
 #endif
+; and so must MediaRenamer's own license (GNU GPL v3)
+#if !FileExists(AddBackslash(SourceDir) + "LICENSE.txt")
+  #error LICENSE.txt is missing from SourceDir
+#endif
 #if !FileExists(AddBackslash(SourceDir) + "runtime\legal\java.base\LICENSE")
   #error runtime\legal (the Java runtime notices) is missing from SourceDir
 #endif
@@ -35,6 +39,8 @@ AppName=MediaRenamer
 AppVersion={#AppVersion}
 AppVerName=MediaRenamer {#AppVersion}
 AppPublisher=MediaRenamer
+AppCopyright=Copyright (C) 2026 AeLiu. License: GPL-3.0-only
+AppPublisherURL=https://github.com/AFBenot/MediaRenamer
 AppComments=Renames series, movies and music with online data
 VersionInfoVersion={#AppVersion}
 ; Per-user install by default (no administrator rights); the user can choose "all users" in a dialog
@@ -79,7 +85,7 @@ Type: filesandordirs; Name: "{app}\runtime"
 Type: filesandordirs; Name: "{app}\app"
 
 [Files]
-; Includes THIRD-PARTY-NOTICES.txt (next to the exe) and runtime\legal (Java runtime notices)
+; Includes LICENSE.txt and THIRD-PARTY-NOTICES.txt (next to the exe) and runtime\legal (Java runtime notices)
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]

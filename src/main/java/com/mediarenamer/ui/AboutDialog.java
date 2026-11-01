@@ -28,13 +28,19 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
-/** "About MediaRenamer": version, author, credits, runtime, data folder and third-party licenses. */
+/** "About MediaRenamer": version, author, license, credits, runtime, data folder, third-party licenses and sponsoring. */
 public class AboutDialog extends JDialog {
 
     static final String AUTHOR = "AeLiu";
+    /** GitHub Sponsors page of the author (fixed address, also the button's tooltip). */
+    static final String SPONSOR_URL = "https://github.com/sponsors/AFBenot";
 
+    /** Opens MediaRenamer's own license (GNU GPL v3). */
+    final JButton license;
     /** Opens the third-party license notices. */
     final JButton licenses;
+    /** Opens {@link #SPONSOR_URL} in the browser. */
+    final JButton sponsor;
 
     public AboutDialog(JFrame owner) {
         super(owner, tr("about.title"), true);
@@ -75,6 +81,12 @@ public class AboutDialog extends JDialog {
         c.anchor = GridBagConstraints.WEST;
         int row = 0;
         row = fact(facts, c, row, tr("about.author"), new JLabel(AUTHOR));
+        license = new JButton(tr("about.license.name"));
+        license.putClientProperty("JButton.buttonType", "borderless");
+        license.setForeground(Theme.accentText());
+        license.setMargin(new Insets(0, 0, 0, 0));
+        license.addActionListener(e -> ThirdPartyLicensesDialog.ownLicense(this).setVisible(true));
+        row = fact(facts, c, row, tr("about.license"), license);
         row = fact(facts, c, row, "Java", new JLabel(System.getProperty("java.version") + " · " + System.getProperty("java.vendor")));
         JPanel data = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         JLabel folder = new JLabel(ConflictDialog.abbreviate(AppFolders.data().toAbsolutePath().toString(), 52));
@@ -109,7 +121,21 @@ public class AboutDialog extends JDialog {
         licenses.putClientProperty("JButton.buttonType", "borderless");
         licenses.setForeground(Theme.accentText());
         licenses.addActionListener(e -> new ThirdPartyLicensesDialog(this).setVisible(true));
-        buttons.add(licenses, BorderLayout.WEST);
+        sponsor = new JButton(tr("about.sponsor"));
+        sponsor.putClientProperty("JButton.buttonType", "borderless");
+        sponsor.setForeground(Theme.accentText());
+        sponsor.setToolTipText(SPONSOR_URL);
+        sponsor.addActionListener(e -> {
+            try {
+                java.awt.Desktop.getDesktop().browse(java.net.URI.create(SPONSOR_URL));
+            } catch (Exception ex) {
+                // no browser available: the URL stays in the tooltip
+            }
+        });
+        JPanel links = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        links.add(licenses);
+        links.add(sponsor);
+        buttons.add(links, BorderLayout.WEST);
         JButton close = new JButton(tr("common.close"));
         close.addActionListener(e -> dispose());
         buttons.add(close, BorderLayout.EAST);

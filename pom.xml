@@ -6,10 +6,19 @@
 
   <groupId>com.mediarenamer</groupId>
   <artifactId>mediarenamer</artifactId>
-  <version>2.5.1</version>
+  <version>2.6.0</version>
   <packaging>jar</packaging>
   <name>MediaRenamer</name>
   <description>Renames series, movies and music with online data.</description>
+  <url>https://github.com/AFBenot/MediaRenamer</url>
+
+  <licenses>
+    <license>
+      <name>GPL-3.0-only</name>
+      <url>https://www.gnu.org/licenses/gpl-3.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
   <properties>
     <maven.compiler.release>21</maven.compiler.release>
@@ -68,6 +77,14 @@
           <include>THIRD-PARTY-NOTICES.txt</include>
         </includes>
         <targetPath>META-INF</targetPath>
+      </resource>
+      <!-- MediaRenamer's own license (GPL-3.0-only): shown by About > License (own folder: the dependency jars bring their own META-INF/LICENSE) -->
+      <resource>
+        <directory>${project.basedir}</directory>
+        <includes>
+          <include>LICENSE</include>
+        </includes>
+        <targetPath>META-INF/mediarenamer</targetPath>
       </resource>
     </resources>
     <plugins>

@@ -7,6 +7,7 @@
     dist\MediaRenamer\MediaRenamer.exe          desktop application (no console)
     dist\MediaRenamer\MediaRenamer-cli.exe      same application with a console, for the command line
     dist\MediaRenamer\THIRD-PARTY-NOTICES.txt   third-party license notices (Java runtime ones: runtime\legal)
+    dist\MediaRenamer\LICENSE.txt               MediaRenamer's own license (GNU GPL v3)
     dist\MediaRenamer-<version>-windows.zip    the folder above zipped (portable, copy to another machine)
     dist\MediaRenamer-<version>-setup.exe      Windows installer (Inno Setup 6, src\main\packaging\MediaRenamer.iss)
 
@@ -91,7 +92,7 @@ jpackage --type app-image `
     --app-version $Version `
     --vendor "MediaRenamer" `
     --description "Renames series, movies and music with online data" `
-    --copyright "Personal use" `
+    --copyright "Copyright (C) 2026 AeLiu. License: GPL-3.0-only" `
     --icon $icon `
     --input $inputDir `
     --main-jar MediaRenamer.jar `
@@ -107,6 +108,9 @@ if ($LASTEXITCODE -ne 0) { throw "jpackage failed" }
 # own notices are runtime\legal, which jlink keeps (only --no-man-pages/--no-header-files are stripped)
 $notices = "THIRD-PARTY-NOTICES.txt"
 Copy-Item (Join-Path $root $notices) $appDir
+# The GPL must accompany every copy of the program: LICENSE next to the exe, with .txt so Windows opens it
+$license = "LICENSE.txt"
+Copy-Item (Join-Path $root "LICENSE") (Join-Path $appDir $license)
 if (-not (Test-Path (Join-Path $appDir "runtime\legal\java.base\LICENSE"))) {
     throw "The runtime image has no legal\java.base\LICENSE: the OpenJDK notices must ship with the runtime."
 }
@@ -122,7 +126,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $archive = [System.IO.Compression.ZipFile]::OpenRead($zip)
 try {
     $entries = $archive.Entries | ForEach-Object { $_.FullName -replace '\\', '/' }
-    foreach ($required in @("MediaRenamer/$notices", "MediaRenamer/runtime/legal/java.base/LICENSE")) {
+    foreach ($required in @("MediaRenamer/$notices", "MediaRenamer/$license", "MediaRenamer/runtime/legal/java.base/LICENSE")) {
         if ($entries -notcontains $required) { throw "$zip does not contain $required" }
     }
 } finally {

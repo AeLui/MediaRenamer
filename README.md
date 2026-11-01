@@ -55,8 +55,9 @@ command line.
   explaining what it is for.
 - **Setup wizard on the first run**: interface language, the API keys of the data services (with what each one is
   for and a button to get the key) and the media servers (Jellyfin, Plex). See [docs/USAGE.md](docs/USAGE.md#first-run-setup-wizard).
-- **About MediaRenamer** (ⓘ button in the header, or click the version in the status bar): version, author, credits
-  and **Third-party licenses** (the license notices of the bundled libraries and Java runtime).
+- **About MediaRenamer** (ⓘ button in the header, or click the version in the status bar): version, author, license
+  (opens the GNU GPL v3 text), credits, **Third-party licenses** (the license notices of the bundled libraries and
+  Java runtime) and **♥ Sponsor** (opens the GitHub Sponsors page).
 - **Poster search**: TMDb/TheTVDB results show poster, year, original title and
   overview; on mouse hover a card shows director/creators, cast, genres, runtime, rating…
 
@@ -77,8 +78,8 @@ It produces (the version comes from `pom.xml`):
   Installing a newer version upgrades the existing one; uninstalling keeps your preferences, keys, profiles and history.
 - `dist\MediaRenamer\MediaRenamer.exe` (desktop) and `dist\MediaRenamer\MediaRenamer-cli.exe` (console), and
   `dist\MediaRenamer-<version>-windows.zip` with that folder (portable version).
-- Every package carries `THIRD-PARTY-NOTICES.txt` next to the exe and the Java runtime notices in `runtime\legal`
-  (see [docs/THIRD_PARTY.md](docs/THIRD_PARTY.md)).
+- Every package carries `LICENSE.txt` (GNU GPL v3) and `THIRD-PARTY-NOTICES.txt` next to the exe and the Java
+  runtime notices in `runtime\legal` (see [docs/THIRD_PARTY.md](docs/THIRD_PARTY.md)).
 
 Everything bundles its own Java (the JDK that runs `jpackage`, so build with the latest Java 21 security update; the
 script prints the bundled version): nothing needs to be installed to run it. Building the installer needs
@@ -120,9 +121,32 @@ java -jar target/MediaRenamer.jar -rename "D:/Downloads" -r --db TheMovieDB::TV 
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Status of each feature, by version |
 | [docs/THIRD_PARTY.md](docs/THIRD_PARTY.md) | Third-party components and their licenses, where the notices ship, Store listing text |
 
+## License
+
+Copyright (C) 2026 AeLiu.
+
+MediaRenamer is free software: you can redistribute it and/or modify it under the terms of the
+**GNU General Public License version 3** (`GPL-3.0-only`), as published by the Free Software Foundation. It is
+distributed in the hope that it will be useful, but **without any warranty**; see [LICENSE](LICENSE) for the full text.
+
+Any distributed copy or modified version must stay under the GPL v3 and come with its complete source code.
+
+**Commercial license**: if you want to use MediaRenamer in a product or service under terms other than the GPL v3
+(for example, without publishing your source code), a separate commercial license can be arranged.
+[Open an issue](https://github.com/AFBenot/MediaRenamer/issues) to get in touch.
+
+**Contributions**: by submitting a pull request you agree that your contribution is licensed under the GPL v3 and that
+the author may also include it in MediaRenamer under a commercial license.
+
+## Support the project
+
+MediaRenamer is free. If it is useful to you, you can support its development through
+[GitHub Sponsors](https://github.com/sponsors/AFBenot) (the **Sponsor** button of the repository, or **♥ Sponsor** in
+*About MediaRenamer*).
+
 ## Legal notice
 
-MediaRenamer is for personal use. It ships no API keys: each user configures their own credentials.
+MediaRenamer ships no API keys: each user configures their own credentials.
 Respect the terms of use of each service (TMDb, TheTVDB, AniDB, AcoustID).
 Third-party components and their licenses: [docs/THIRD_PARTY.md](docs/THIRD_PARTY.md) and
 [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt).
