@@ -690,7 +690,7 @@ public class RenamePanel extends JPanel {
         return Icons.file();
     }
 
-    /** Short description of the matched object: "Breaking Bad · S01E01 · Pilot", "Avatar (2009)". */
+    /** Short description of the matched object: "Lanterns of Vell · S01E01 · The Ferryman's Toll", "Glass Harbor (2024)". */
     static String describe(Object m) {
         if (m instanceof Episode e) {
             return e.getSeriesName() + "  ·  " + EpisodeFormat.S00E00.format(e) + (e.getTitle() == null ? "" : "  ·  " + e.getTitle());

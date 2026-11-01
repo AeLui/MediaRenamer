@@ -50,7 +50,7 @@ import javax.swing.SwingUtilities;
 
 /**
  * Development tool (not a test): opens the UI with sample data and saves the PNG screenshots of the documentation
- * (main window light and dark, progress, search, details card, episode chooser, name check, conflict, history).
+ * (main window light and dark, progress, search, details card, episode chooser, name check, conflict, format editor, history).
  * <p>
  * Every title, name, synopsis and poster is invented here (posters are drawn in code), so the screenshots carry no
  * third-party content. It works offline and without API keys, on an empty temporary data folder that is deleted at
@@ -250,6 +250,10 @@ public final class UiSnapshot {
         Quality nq = new Quality(source, source.length(), 3840, 1600, "HEVC", "H.265", "HDR10", 19_800_000L, 21_400_000L, "E-AC-3", "7.1",
                 7_968_000L, modified);
         snapDialog(() -> new ConflictDialog(frame.get(), source, existing, nq, oq, 1), out.resolve("screenshot-conflict.png"));
+
+        // format editor opened from a profile, previewing its invented sample
+        snapDialog(() -> FormatDialog.forProfile(frame.get(), preset.getMode(), "{n.colon(' - ')} ({y})/{n.colon(' - ')} ({y}){subt}"),
+                out.resolve("screenshot-format.png"));
 
         // history with fictional renames: the sample movies and some episodes of the sample series
         Map<File, File> movies = new LinkedHashMap<>();
