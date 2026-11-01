@@ -123,6 +123,7 @@ java -jar target/MediaRenamer.jar -rename "D:/Downloads" -r --db TheMovieDB::TV 
 | [docs/CLI.md](docs/CLI.md) | Command line reference |
 | [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | Preferences, API keys, external tools, data files |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Building, testing, conventions, **security standards** (mandatory for every change) and how to extend |
+| [CHANGELOG.md](CHANGELOG.md) | What changed in each release (and what is coming in the next one) |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Status of each feature, by version |
 | [docs/THIRD_PARTY.md](docs/THIRD_PARTY.md) | Third-party components and their licenses, where the notices ship, Store listing text |
 | [docs/PRIVACY.md](docs/PRIVACY.md) | Which online services are contacted, when and with what data |

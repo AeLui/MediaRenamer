@@ -70,11 +70,18 @@ powershell -ExecutionPolicy Bypass -File scripts\build-exe.ps1
 
 ## Releases and code signing
 
+Development happens on `main`. Between releases `pom.xml` carries the next version with `-SNAPSHOT` (`2.8.0-SNAPSHOT`;
+the build scripts strip the suffix), and every finished change adds a line under `## [Unreleased]` in
+[CHANGELOG.md](../CHANGELOG.md). To release, remove `-SNAPSHOT`, rename `## [Unreleased]` to `## [X.Y.Z] - <date>`
+(adding a new empty `## [Unreleased]` and the compare links), commit `MediaRenamer X.Y.Z` and push it together with the
+annotated tag `vX.Y.Z`. A pushed tag is never moved: a broken release is fixed in the next patch version.
+
 Pushing a tag `v<version>` (equal to the `pom.xml` version) runs [`.github/workflows/release.yml`](../.github/workflows/release.yml)
 on a GitHub-hosted Windows runner: Maven build with the tests on SapMachine 21 (the bundled runtime, which must match
 `THIRD-PARTY-NOTICES.txt`), `build-exe.ps1 -AppImageOnly`, signing of `MediaRenamer.exe` and `MediaRenamer-cli.exe` in
 SignPath, `-PackageOnly`, signing of the installer, and the zip and the installer attached to the GitHub release of the
-tag (created if it does not exist). It can also be run by hand (*Actions → Release → Run workflow*), which keeps the
+tag (created if it does not exist). The release notes are the tag's section of `CHANGELOG.md` (the workflow stops if it
+is missing) plus the downloads and the signing attribution. It can also be run by hand (*Actions → Release → Run workflow*), which keeps the
 files as a workflow artifact.
 
 Signing uses the free [SignPath Foundation](https://signpath.org) certificate for open source projects; its conditions
