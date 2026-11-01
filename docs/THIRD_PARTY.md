@@ -48,6 +48,6 @@ license or the notices are missing from the folder or the zip, and warns if the 
 Ready-to-paste plain text for the Store listing (description or "Additional license terms"):
 
 ```text
-License: MediaRenamer is free software under the GNU General Public License version 3 (GPL-3.0-only). Source code: https://github.com/AFBenot/MediaRenamer
+License: MediaRenamer is free software under the GNU General Public License version 3 (GPL-3.0-only). Source code: https://github.com/AeLui/MediaRenamer
 Third-party software: MediaRenamer includes open-source components, used under their licenses: Apache Groovy (Apache License 2.0; includes ANTLR 4 and ASM under BSD 3-Clause and picocli under Apache 2.0), FlatLaf (Apache License 2.0), RSyntaxTextArea (BSD 3-Clause), Java Native Access (Apache License 2.0; includes libffi under the MIT License) and a Java runtime from SapMachine/OpenJDK by SAP SE (GNU GPL v2 with the Classpath Exception). The full license texts and notices are installed with the app (THIRD-PARTY-NOTICES.txt next to MediaRenamer.exe and the runtime\legal folder) and are shown in the app under About MediaRenamer > Third-party licenses.
 ```

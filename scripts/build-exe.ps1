@@ -17,11 +17,19 @@
 .EXAMPLE
   powershell -ExecutionPolicy Bypass -File scripts\build-exe.ps1
   powershell -ExecutionPolicy Bypass -File scripts\build-exe.ps1 -SkipBuild
+  # Two steps with the exes signed in between (what .github\workflows\release.yml does):
+  powershell -ExecutionPolicy Bypass -File scripts\build-exe.ps1 -AppImageOnly
+  powershell -ExecutionPolicy Bypass -File scripts\build-exe.ps1 -PackageOnly
 #>
 param(
     [switch]$SkipBuild,
     # Only the exe and the zip, without the installer
     [switch]$SkipInstaller,
+    # Only the app-image (dist\MediaRenamer with its notices), without the zip and the installer: the Release workflow
+    # signs its exes before packaging them
+    [switch]$AppImageOnly,
+    # Only the zip and the installer, from the existing dist\MediaRenamer (no Maven build, no jpackage)
+    [switch]$PackageOnly,
     # Defaults to the pom.xml version (without -SNAPSHOT): it is the single source of the version
     [string]$Version
 )
@@ -49,74 +57,84 @@ function Find-Iscc {
 
 # Fail early (before the long build) if the installer cannot be built
 $iscc = $null
-if (-not $SkipInstaller) {
+if (-not $SkipInstaller -and -not $AppImageOnly) {
     $iscc = Find-Iscc
     if (-not $iscc) {
         throw "Inno Setup 6 (ISCC.exe) not found. Install it with: winget install --id JRSoftware.InnoSetup -e --source winget --scope user (or use -SkipInstaller)."
     }
 }
 
-if (-not $SkipBuild) {
+if (-not $SkipBuild -and -not $PackageOnly) {
     # On machines with an antivirus/proxy that inspects HTTPS, Maven needs the Windows certificate store
     $env:MAVEN_OPTS = "-Djavax.net.ssl.trustStoreType=Windows-ROOT"
     mvn -B -q package
     if ($LASTEXITCODE -ne 0) { throw "mvn package failed" }
 }
 
-$jar = Join-Path $root "target\MediaRenamer.jar"
-if (-not (Test-Path $jar)) { throw "$jar does not exist. Run without -SkipBuild." }
-
-$inputDir = Join-Path $root "target\jpackage-input"
 $dist = Join-Path $root "dist"
-
-# If the previous exe is running, Windows locks its files: deleting the folder would leave it half-deleted
-# (everything but the locked files) and jpackage would fail anyway. Better to stop before touching anything.
 $appDir = Join-Path $dist "MediaRenamer"
-$running = Get-CimInstance Win32_Process -Filter "Name like 'MediaRenamer%'" | Where-Object { $_.ExecutablePath -and $_.ExecutablePath.StartsWith($appDir, [StringComparison]::OrdinalIgnoreCase) }
-if ($running) {
-    throw "MediaRenamer is running from $appDir (PID $(($running.ProcessId) -join ', ')). Close it and run the script again."
-}
-Remove-Item -Recurse -Force $inputDir, (Join-Path $dist "MediaRenamer") -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Force $inputDir, $dist | Out-Null
-Copy-Item $jar $inputDir
-
-# Modules: those detected by jdeps + those used through reflection or as services:
-#  jdk.crypto.mscapi (Windows certificates), jdk.localedata (localized dates and languages),
-#  java.sql/java.scripting (Groovy), jdk.crypto.ec, jdk.charsets, jdk.unsupported, jdk.zipfs
-$modules = "java.base,java.compiler,java.desktop,java.logging,java.management,java.net.http,java.prefs,java.xml,java.sql,java.scripting,java.naming," +
-           "jdk.crypto.mscapi,jdk.crypto.ec,jdk.localedata,jdk.charsets,jdk.unsupported,jdk.zipfs,jdk.accessibility"
-
-$icon = Join-Path $root "src\main\packaging\MediaRenamer.ico"
-jpackage --type app-image `
-    --name MediaRenamer `
-    --app-version $Version `
-    --vendor "MediaRenamer" `
-    --description "Renames series, movies and music with online data" `
-    --copyright "Copyright (C) 2026 AeLiu. License: GPL-3.0-only" `
-    --icon $icon `
-    --input $inputDir `
-    --main-jar MediaRenamer.jar `
-    --main-class com.mediarenamer.Main `
-    --add-modules $modules `
-    --jlink-options "--strip-debug --no-man-pages --no-header-files --compress=zip-6" `
-    --java-options "-Xmx1g" `
-    --add-launcher "MediaRenamer-cli=$(Join-Path $root 'src\main\packaging\cli-launcher.properties')" `
-    --dest $dist
-if ($LASTEXITCODE -ne 0) { throw "jpackage failed" }
-
-# Third-party license notices next to the exe (the zip and the installer take them from here); the Java runtime's
-# own notices are runtime\legal, which jlink keeps (only --no-man-pages/--no-header-files are stripped)
 $notices = "THIRD-PARTY-NOTICES.txt"
-Copy-Item (Join-Path $root $notices) $appDir
-# The GPL must accompany every copy of the program: LICENSE next to the exe, with .txt so Windows opens it
 $license = "LICENSE.txt"
-Copy-Item (Join-Path $root "LICENSE") (Join-Path $appDir $license)
-if (-not (Test-Path (Join-Path $appDir "runtime\legal\java.base\LICENSE"))) {
-    throw "The runtime image has no legal\java.base\LICENSE: the OpenJDK notices must ship with the runtime."
+$icon = Join-Path $root "src\main\packaging\MediaRenamer.ico"
+
+if ($PackageOnly) {
+    if (-not (Test-Path (Join-Path $appDir "MediaRenamer.exe"))) { throw "$appDir has no MediaRenamer.exe. Run with -AppImageOnly first." }
+} else {
+    $jar = Join-Path $root "target\MediaRenamer.jar"
+    if (-not (Test-Path $jar)) { throw "$jar does not exist. Run without -SkipBuild." }
+
+    $inputDir = Join-Path $root "target\jpackage-input"
+
+    # If the previous exe is running, Windows locks its files: deleting the folder would leave it half-deleted
+    # (everything but the locked files) and jpackage would fail anyway. Better to stop before touching anything.
+    $running = Get-CimInstance Win32_Process -Filter "Name like 'MediaRenamer%'" | Where-Object { $_.ExecutablePath -and $_.ExecutablePath.StartsWith($appDir, [StringComparison]::OrdinalIgnoreCase) }
+    if ($running) {
+        throw "MediaRenamer is running from $appDir (PID $(($running.ProcessId) -join ', ')). Close it and run the script again."
+    }
+    Remove-Item -Recurse -Force $inputDir, (Join-Path $dist "MediaRenamer") -ErrorAction SilentlyContinue
+    New-Item -ItemType Directory -Force $inputDir, $dist | Out-Null
+    Copy-Item $jar $inputDir
+
+    # Modules: those detected by jdeps + those used through reflection or as services:
+    #  jdk.crypto.mscapi (Windows certificates), jdk.localedata (localized dates and languages),
+    #  java.sql/java.scripting (Groovy), jdk.crypto.ec, jdk.charsets, jdk.unsupported, jdk.zipfs
+    $modules = "java.base,java.compiler,java.desktop,java.logging,java.management,java.net.http,java.prefs,java.xml,java.sql,java.scripting,java.naming," +
+               "jdk.crypto.mscapi,jdk.crypto.ec,jdk.localedata,jdk.charsets,jdk.unsupported,jdk.zipfs,jdk.accessibility"
+
+    jpackage --type app-image `
+        --name MediaRenamer `
+        --app-version $Version `
+        --vendor "MediaRenamer" `
+        --description "Renames series, movies and music with online data" `
+        --copyright "Copyright (C) 2026 AeLiu. License: GPL-3.0-only" `
+        --icon $icon `
+        --input $inputDir `
+        --main-jar MediaRenamer.jar `
+        --main-class com.mediarenamer.Main `
+        --add-modules $modules `
+        --jlink-options "--strip-debug --no-man-pages --no-header-files --compress=zip-6" `
+        --java-options "-Xmx1g" `
+        --add-launcher "MediaRenamer-cli=$(Join-Path $root 'src\main\packaging\cli-launcher.properties')" `
+        --dest $dist
+    if ($LASTEXITCODE -ne 0) { throw "jpackage failed" }
+
+    # Third-party license notices next to the exe (the zip and the installer take them from here); the Java runtime's
+    # own notices are runtime\legal, which jlink keeps (only --no-man-pages/--no-header-files are stripped)
+    Copy-Item (Join-Path $root $notices) $appDir
+    # The GPL must accompany every copy of the program: LICENSE next to the exe, with .txt so Windows opens it
+    Copy-Item (Join-Path $root "LICENSE") (Join-Path $appDir $license)
+    if (-not (Test-Path (Join-Path $appDir "runtime\legal\java.base\LICENSE"))) {
+        throw "The runtime image has no legal\java.base\LICENSE: the OpenJDK notices must ship with the runtime."
+    }
+    $runtimeVersion = (Select-String -Path (Join-Path $appDir "runtime\release") -Pattern '^JAVA_VERSION="(.*)"').Matches.Groups[1].Value
+    if (-not (Select-String -Path (Join-Path $appDir $notices) -SimpleMatch $runtimeVersion -Quiet)) {
+        Write-Warning "$notices does not mention the bundled Java runtime ${runtimeVersion}: update its Java runtime section."
+    }
 }
-$runtimeVersion = (Select-String -Path (Join-Path $appDir "runtime\release") -Pattern '^JAVA_VERSION="(.*)"').Matches.Groups[1].Value
-if (-not (Select-String -Path (Join-Path $appDir $notices) -SimpleMatch $runtimeVersion -Quiet)) {
-    Write-Warning "$notices does not mention the bundled Java runtime ${runtimeVersion}: update its Java runtime section."
+
+if ($AppImageOnly) {
+    Write-Host "App-image: $appDir"
+    return
 }
 
 $zip = Join-Path $dist "MediaRenamer-$Version-windows.zip"

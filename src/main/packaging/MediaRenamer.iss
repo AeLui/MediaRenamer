@@ -40,9 +40,14 @@ AppVersion={#AppVersion}
 AppVerName=MediaRenamer {#AppVersion}
 AppPublisher=MediaRenamer
 AppCopyright=Copyright (C) 2026 AeLiu. License: GPL-3.0-only
-AppPublisherURL=https://github.com/AFBenot/MediaRenamer
+AppPublisherURL=https://github.com/AeLui/MediaRenamer
 AppComments=Renames series, movies and music with online data
 VersionInfoVersion={#AppVersion}
+; Product name and version of setup.exe: SignPath checks them against the release (docs\CODE_SIGNING.md)
+VersionInfoProductName=MediaRenamer
+VersionInfoProductVersion={#AppVersion}
+VersionInfoProductTextVersion={#AppVersion}
+VersionInfoCompany=MediaRenamer
 ; Per-user install by default (no administrator rights); the user can choose "all users" in a dialog
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog

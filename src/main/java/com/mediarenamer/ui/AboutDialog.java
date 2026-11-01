@@ -33,7 +33,7 @@ public class AboutDialog extends JDialog {
 
     static final String AUTHOR = "AeLiu";
     /** GitHub Sponsors page of the author (fixed address, also the button's tooltip). */
-    static final String SPONSOR_URL = "https://github.com/sponsors/AFBenot";
+    static final String SPONSOR_URL = "https://github.com/sponsors/AeLui";
 
     /** Opens MediaRenamer's own license (GNU GPL v3). */
     final JButton license;

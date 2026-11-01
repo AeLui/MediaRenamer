@@ -216,9 +216,9 @@ class ThirdPartyNoticesTest {
     @Test
     void aboutHasASponsorLinkToTheFixedGitHubSponsorsPage() throws Exception {
         assumeFalse(GraphicsEnvironment.isHeadless());
-        assertEquals("https://github.com/sponsors/AFBenot", AboutDialog.SPONSOR_URL);
+        assertEquals("https://github.com/sponsors/AeLui", AboutDialog.SPONSOR_URL);
         String funding = Files.readString(Path.of(".github", "FUNDING.yml"), StandardCharsets.UTF_8);
-        assertTrue(funding.contains("github: AFBenot"), "the repository Sponsor button points to the same account");
+        assertTrue(funding.contains("github: AeLui"), "the repository Sponsor button points to the same account");
         I18n.setLocale(Locale.ENGLISH);
         SwingUtilities.invokeAndWait(() -> {
             AboutDialog about = new AboutDialog(null);

@@ -65,6 +65,11 @@ command line.
 |---|---|---|
 | ![](docs/img/screenshot-search.png) | ![](docs/img/screenshot-card.png) | ![](docs/img/screenshot-main-dark.png) |
 
+## Download
+
+The installer (`MediaRenamer-<version>-setup.exe`) and the portable zip of every version are on the
+[Releases page](https://github.com/AeLui/MediaRenamer/releases). See the [Code signing policy](#code-signing-policy).
+
 ## Windows installer and executable
 
 ```powershell
@@ -120,6 +125,8 @@ java -jar target/MediaRenamer.jar -rename "D:/Downloads" -r --db TheMovieDB::TV 
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Building, testing, conventions, **security standards** (mandatory for every change) and how to extend |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Status of each feature, by version |
 | [docs/THIRD_PARTY.md](docs/THIRD_PARTY.md) | Third-party components and their licenses, where the notices ship, Store listing text |
+| [docs/PRIVACY.md](docs/PRIVACY.md) | Which online services are contacted, when and with what data |
+| [docs/CODE_SIGNING.md](docs/CODE_SIGNING.md) | Code signing policy: what is signed, team roles, how a release is signed |
 
 ## License
 
@@ -131,17 +138,24 @@ distributed in the hope that it will be useful, but **without any warranty**; se
 
 Any distributed copy or modified version must stay under the GPL v3 and come with its complete source code.
 
-**Commercial license**: if you want to use MediaRenamer in a product or service under terms other than the GPL v3
-(for example, without publishing your source code), a separate commercial license can be arranged.
-[Open an issue](https://github.com/AFBenot/MediaRenamer/issues) to get in touch.
+**Contributions**: by submitting a pull request you agree that your contribution is licensed under the GPL v3.
 
-**Contributions**: by submitting a pull request you agree that your contribution is licensed under the GPL v3 and that
-the author may also include it in MediaRenamer under a commercial license.
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by
+[SignPath Foundation](https://signpath.org). The Windows executables and the installer of each release are built and
+signed by the [Release workflow](.github/workflows/release.yml) from this repository: see
+[docs/CODE_SIGNING.md](docs/CODE_SIGNING.md) for the team roles and what gets signed.
+
+## Privacy
+
+MediaRenamer does not collect telemetry and only contacts the online services you use: see
+[docs/PRIVACY.md](docs/PRIVACY.md).
 
 ## Support the project
 
 MediaRenamer is free. If it is useful to you, you can support its development through
-[GitHub Sponsors](https://github.com/sponsors/AFBenot) (the **Sponsor** button of the repository, or **♥ Sponsor** in
+[GitHub Sponsors](https://github.com/sponsors/AeLui) (the **Sponsor** button of the repository, or **♥ Sponsor** in
 *About MediaRenamer*).
 
 ## Legal notice
