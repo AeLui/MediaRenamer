@@ -38,6 +38,9 @@ Since v0.7 the API keys (`apikey.tmdb`, `apikey.tvdb`, `apikey.tvdb.pin`, `apike
 | `apikey.anidb.client` | `MEDIARENAMER_APIKEY_ANIDB_CLIENT` | Name of the HTTP client registered at AniDB |
 | `apikey.anidb.clientver` | `MEDIARENAMER_APIKEY_ANIDB_CLIENTVER` | AniDB client version (default 1) |
 | `ui.language` | `MEDIARENAMER_UI_LANGUAGE` | Interface and CLI language: `en`, `es`, `fr`, `de`, `pt`, `it`. Empty = the system's (English if it is not one of those) |
+| `updates.autoCheck` | `MEDIARENAMER_UPDATES_AUTOCHECK` | Check GitHub for a newer version at start-up, at most once every 24 hours (default `true`; Preferences → General → *Check for updates at start-up*) |
+| `updates.lastCheck` | `MEDIARENAMER_UPDATES_LASTCHECK` | Internal: when the last automatic check ran (milliseconds since 1970). Do not edit |
+| `updates.skipVersion` | `MEDIARENAMER_UPDATES_SKIPVERSION` | Version skipped in the update dialog (empty = none); a later version is offered again |
 | `rename.language` | | Data language (`es-ES`), chosen from the list in Preferences → Data services. Empty = system language |
 | `rename.episode.order` | | Default episode order |
 | `rename.match.mode` | | `Strict` or `Opportunistic` |

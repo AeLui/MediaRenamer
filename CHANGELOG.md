@@ -7,6 +7,13 @@ and the versions follow [Semantic Versioning](https://semver.org/). The section 
 
 ## [Unreleased]
 
+### Added
+
+- Update check: MediaRenamer looks on GitHub for a newer version a few seconds after it starts (at most once a day;
+  **Preferences → General → Check for updates at start-up** turns it off) and from **About → Check for updates**. A
+  dialog shows the release notes; **Update** downloads, verifies and installs the new version in an installed copy, and
+  MediaRenamer reopens after the update. **Skip this version** is also offered.
+
 ## [2.7.1] - 2026-11-01
 
 ### Fixed

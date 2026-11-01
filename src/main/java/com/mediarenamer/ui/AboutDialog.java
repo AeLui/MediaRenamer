@@ -41,6 +41,8 @@ public class AboutDialog extends JDialog {
     final JButton licenses;
     /** Opens {@link #SPONSOR_URL} in the browser. */
     final JButton sponsor;
+    /** Looks for a newer version now and reports the result. */
+    final JButton checkUpdates;
 
     public AboutDialog(JFrame owner) {
         super(owner, tr("about.title"), true);
@@ -132,9 +134,21 @@ public class AboutDialog extends JDialog {
                 // no browser available: the URL stays in the tooltip
             }
         });
+        checkUpdates = new JButton(tr("about.checkUpdates"));
+        checkUpdates.putClientProperty("JButton.buttonType", "borderless");
+        checkUpdates.setForeground(Theme.accentText());
+        checkUpdates.addActionListener(e -> {
+            checkUpdates.setEnabled(false);
+            checkUpdates.setText(tr("update.checking"));
+            UpdateCheck.manual(this, () -> {
+                checkUpdates.setText(tr("about.checkUpdates"));
+                checkUpdates.setEnabled(true);
+            });
+        });
         JPanel links = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         links.add(licenses);
         links.add(sponsor);
+        links.add(checkUpdates);
         buttons.add(links, BorderLayout.WEST);
         JButton close = new JButton(tr("common.close"));
         close.addActionListener(e -> dispose());

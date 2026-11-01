@@ -33,7 +33,9 @@ approved by hand in SignPath. Multi-factor authentication is enabled for GitHub 
 
 This program will not transfer any information to other networked systems unless specifically requested by the user or
 the person installing or operating it. See [PRIVACY.md](PRIVACY.md) for each online service it can contact when you use
-it, and links to their privacy policies.
+it, and links to their privacy policies. The one exception is a check for a newer version on GitHub, made at start-up
+at most once a day, which sends no data other than the request itself; it can be turned off in *Preferences →
+General* (see [PRIVACY.md](PRIVACY.md)).
 
 ## How a release is signed
 

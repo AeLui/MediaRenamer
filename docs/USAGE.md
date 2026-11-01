@@ -71,7 +71,7 @@ last category opened is shown again:
 
 | Category | Options |
 |---|---|
-| General | interface language, dark theme |
+| General | interface language, dark theme, **Check for updates at start-up** |
 | Data services | API keys (with **Get** to request each one) and the data language |
 | Target folders | default folder per type (Movies, Series, Anime, Music, Other) |
 | Media servers | **Jellyfin**: server URL, API Key (**Get** opens the API keys page of your server once the URL is written), **Test connection**, automatic scan. **Plex** (below a separator): server URL, token (**Sign in…** gets it from plex.tv), **Test connection**, automatic scan |
@@ -187,6 +187,28 @@ move between pages, next to *Page n of N · total renames*.
 - **Export CSV…**: saves the whole history (all pages) to a `.csv` file with the columns Date, Source, Target
   (UTF-8, comma separator; it opens directly in Excel).
 
+## Updates
+
+A few seconds after the window opens, MediaRenamer asks GitHub whether a newer release exists. It does so at most once
+every 24 hours, and you can turn it off in **Preferences → General → Check for updates at start-up**. You can also
+check at any time with **Check for updates** in *About MediaRenamer*. Only one request is made, to the latest release
+of the repository (see [PRIVACY.md](PRIVACY.md)).
+
+When there is a newer version, a dialog shows its number and release notes with three buttons: **Update**, **Later**
+and, for the automatic check only, **Skip this version** (the automatic check will not offer it again; a manual check
+still does, and so does a later version).
+
+- **Installed copy** (from the installer): **Update** downloads `MediaRenamer-<version>-setup.exe` from GitHub, checks
+  its size and SHA-256 against the digest GitHub publishes for it, and runs it silently with the same install mode as
+  before (Windows asks for permission if it was installed for all users). MediaRenamer closes, is updated and opens
+  again.
+- **Portable zip or a development build**: **Update** opens the release page in your browser to download it.
+- If anything fails (no connection, a file that does not match, the installer missing from the release), a message is
+  shown and the release page is offered instead.
+
+Releases are not code-signed yet, so Windows may warn about the installer; the download is protected by HTTPS and the
+SHA-256 check.
+
 ## About MediaRenamer
 
 The discreet **ⓘ** button at the top right (or a click on the version at the bottom right) opens *About MediaRenamer*:
@@ -195,6 +217,7 @@ exe), Java version, data folder (with a button to open it), libraries and the no
 (bottom left) shows the licenses and notices of the bundled libraries and Java runtime (the same text as
 `THIRD-PARTY-NOTICES.txt` next to the exe; the Java runtime notices are also in the `runtime\legal` folder).
 **♥ Sponsor**, next to it, opens the author's GitHub Sponsors page in the browser (the address is shown in its tooltip).
+**Check for updates** looks for a newer version now (see [Updates](#updates)).
 
 ![About](img/screenshot-about.png)
 

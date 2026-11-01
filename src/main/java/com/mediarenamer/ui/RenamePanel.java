@@ -132,6 +132,8 @@ public class RenamePanel extends JPanel {
     private SortOrder order = SortOrder.forName(Settings.get().get(Settings.EPISODE_ORDER));
     /** Modal progress layer (with Cancel) for fetching data and renaming. */
     private final ProgressOverlay overlay;
+    /** A background job with the busy bar (formatting, episode matching) is running. */
+    private boolean working;
     /** Already downloaded episode lists, for the episode chooser (key: database, id, order, language). */
     private final java.util.Map<String, List<Episode>> episodeCache = new java.util.concurrent.ConcurrentHashMap<>();
     /** Adds the dropped files and folders: the lists and, through {@link #fileDropHandler()}, the whole window. */
@@ -1422,7 +1424,13 @@ public class RenamePanel extends JPanel {
         return out;
     }
 
+    /** True while a rename or a data fetch is running (progress layer or busy bar); call on the Swing thread. */
+    boolean isBusy() {
+        return working || overlay.isActive();
+    }
+
     private void busy(boolean b) {
+        working = b;
         progress.setVisible(b);
         progress.setIndeterminate(b);
         setCursor(b ? Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) : null);

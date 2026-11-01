@@ -150,7 +150,8 @@ signed by the [Release workflow](.github/workflows/release.yml) from this reposi
 
 ## Privacy
 
-MediaRenamer does not collect telemetry and only contacts the online services you use: see
+MediaRenamer does not collect telemetry and only contacts the online services you use, plus a check for a newer version
+on GitHub at start-up (once a day at most; it can be turned off in *Preferences*): see
 [docs/PRIVACY.md](docs/PRIVACY.md).
 
 ## Support the project

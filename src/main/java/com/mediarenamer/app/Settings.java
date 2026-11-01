@@ -76,6 +76,14 @@ public final class Settings {
     /** Keys of removed features (the OMDb API key, source removed in 2.5): deleted so no stale secret stays on disk. */
     static final java.util.Set<String> OBSOLETE_KEYS = java.util.Set.of("apikey.omdb");
 
+    // Update check against the GitHub releases
+    /** "false" disables the automatic check at startup (default: enabled). */
+    public static final String UPDATES_AUTO_CHECK = "updates.autoCheck";
+    /** Epoch milliseconds of the last automatic check. */
+    public static final String UPDATES_LAST_CHECK = "updates.lastCheck";
+    /** Version the user chose to skip ("Skip this version"); a manual check still offers it. */
+    public static final String UPDATES_SKIP_VERSION = "updates.skipVersion";
+
     // External tools
     public static final String MEDIAINFO_PATH = "tool.mediainfo";
     public static final String FPCALC_PATH = "tool.fpcalc";

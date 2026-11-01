@@ -29,7 +29,7 @@ import javax.swing.Timer;
 import javax.swing.WindowConstants;
 
 /** Main window: header with logo and shortcuts, rename panel and status bar. */
-public class MainFrame extends JFrame {
+public class MainFrame extends JFrame implements UpdateDialog.Busy {
 
     private final JLabel status = new JLabel(tr("main.ready"));
     private final java.util.function.Consumer<String> logListener = msg -> SwingUtilities.invokeLater(() -> status.setText(msg));
@@ -62,6 +62,8 @@ public class MainFrame extends JFrame {
         }
         MainFrame f = new MainFrame();
         f.setVisible(true);
+        UpdateCheck.automatic(f);
+        UpdateCheck.sweepLeftovers();
         pending.add(0, request);
         pending.forEach(f::deliver);
         pending.clear();
@@ -85,6 +87,12 @@ public class MainFrame extends JFrame {
         f.toFront();
         f.requestFocus();
         f.setAlwaysOnTop(false);
+    }
+
+    /** True while a rename or a data fetch is running: an update must not end the application then. */
+    @Override
+    public boolean isBusy() {
+        return panel != null && panel.isBusy();
     }
 
     private void deliver(SingleInstance.Request request) {

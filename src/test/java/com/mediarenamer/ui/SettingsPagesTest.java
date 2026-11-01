@@ -92,6 +92,24 @@ class SettingsPagesTest {
     }
 
     @Test
+    void autoUpdateDefaultsOnAndSaves() throws Exception {
+        assumeFalse(GraphicsEnvironment.isHeadless());
+        I18n.setLocale(Locale.ENGLISH);
+        Settings.get().put(Settings.UPDATES_AUTO_CHECK, null);
+        SwingUtilities.invokeAndWait(() -> {
+            SettingsPages pages = new SettingsPages(null);
+            pages.page(Category.GENERAL);
+            assertTrue(pages.autoUpdate.isSelected());
+            assertTrue(!pages.isDirty(Category.GENERAL));
+            pages.autoUpdate.setSelected(false);
+            assertTrue(pages.isDirty(Category.GENERAL));
+            pages.save();
+            assertEquals(false, Settings.get().getBoolean(Settings.UPDATES_AUTO_CHECK, true));
+            Settings.get().put(Settings.UPDATES_AUTO_CHECK, null);
+        });
+    }
+
+    @Test
     void unsavedChangesAreTrackedPerCategory() throws Exception {
         assumeFalse(GraphicsEnvironment.isHeadless());
         I18n.setLocale(Locale.ENGLISH);

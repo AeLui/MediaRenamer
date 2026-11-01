@@ -48,6 +48,14 @@ com.mediarenamer
   The labels of the enums (`RenameAction`, `ConflictAction`, `Mode`) and of `Quality.describe()` are translated by
   key (`action.MOVE`, `conflict.ASK`, `mode.Episode`, `quality.size`). Changing the language in Preferences
   rebuilds the window (`MainFrame.reload()`) keeping the file list.
+- `Updates`: the update logic without any UI. Fetches `releases/latest` of the repository from the GitHub API
+  (`api.github.com/repos/AeLui/MediaRenamer/releases/latest`; the URL can be overridden with
+  `-Dmediarenamer.updates.url`, for tests and manual trials only), parses it into a release (version, notes, page,
+  assets with name, size and SHA-256 digest), compares versions, decides whether an automatic check is due
+  (`updates.autoCheck`, at most every 24 h from `updates.lastCheck`) and downloads the `MediaRenamer-<version>-setup.exe`
+  asset into a new temp folder (leftovers older than an hour are swept at start-up), only from https GitHub hosts, verifying its size and SHA-256 (anything unverifiable,
+  a redirect to another host or a name that would leave the folder is refused). Releases are not code-signed:
+  integrity relies on the digest over HTTPS.
 - `TrustStores`: HTTPS trust = JDK `cacerts` **or** Windows `Windows-ROOT` (a combined
   `X509ExtendedTrustManager` set as the default `SSLContext` in `Main`), so that HTTPS works both on a clean Windows and
   behind an antivirus/proxy that inspects HTTPS. See [CONFIGURATION.md](CONFIGURATION.md#https-certificates).
@@ -166,6 +174,13 @@ com.mediarenamer
 - `PlexSignIn`: the Plex *Sign in…* button (PIN sign-in in `SwingWorker`s, cancellable; fills token and, if empty, URL).
 - `ApiService`: the API key fields shared by `PreferencesDialog` and `SetupWizard` (settings key, label, info text for the
   ⓘ tooltip, "Get" URL) and the reusable "Test connection" button of the media servers (`serverTestButton`).
+- `UpdateCheck`: runs `Updates` off the event thread a few seconds after the window opens (automatic: silent when
+  there is nothing new or the request fails; skips `updates.skipVersion`) and from *About → Check for updates* (always
+  answers), and opens `UpdateDialog`; the automatic dialog waits while a rename or data fetch is running.
+- `UpdateDialog`: new version, release notes, **Update** / **Later** / **Skip this version** (automatic flow only). In
+  an installed copy it downloads with progress and cancel, runs the installer silently (`/SILENT /NORESTART /LAUNCH`;
+  `MediaRenamer.iss` relaunches the app after a silent update) and closes the main window (it refuses while a rename or fetch is running); in a portable or development
+  copy, or on any failure, it opens the release page.
 - `AboutDialog`: version, author, license, credits, Java, data folder and notices; opened from the ⓘ button of the
   header or by clicking the version in the status bar. Its *Third-party licenses* button opens `ThirdPartyLicensesDialog`,
   which shows `META-INF/THIRD-PARTY-NOTICES.txt` (copied by Maven from the repository root; read bounded, shown as plain

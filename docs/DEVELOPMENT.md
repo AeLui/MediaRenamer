@@ -228,6 +228,9 @@ instead of leaving it silent. Review the change against this list before closing
 - **External programs and native libraries**: only absolute paths (preference, `lib` next to the application,
   Program Files, absolute `PATH` entries), never the working directory; arguments as a list, never a shell command
   string; always a timeout (`util.Processes`).
+- **Update installer** (`Updates.launchInstaller`): residual risk, accepted: the installer is started fire-and-forget
+  with no timeout (the application exits right after and the installer outlives it); its output is discarded. Its
+  integrity relies on the SHA-256 digest over HTTPS (releases are not code-signed).
 - **Files and data loss**: never delete or overwrite user files silently; writes of the application's own files are
   atomic (`FileUtilities.writeAtomically`); secrets are stored encrypted (`Secrets`) and files with secrets are created
   with restricted permissions from the start.

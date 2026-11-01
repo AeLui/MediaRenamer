@@ -36,6 +36,7 @@ public class ProgressOverlay extends JComponent {
     private final JProgressBar bar = new JProgressBar();
     private final JButton cancel = new JButton(tr("common.cancel"));
     private final AtomicBoolean cancelled = new AtomicBoolean();
+    private volatile boolean active;
     private java.awt.Component previousGlass;
 
     public ProgressOverlay(JFrame frame) {
@@ -89,6 +90,7 @@ public class ProgressOverlay extends JComponent {
 
     /** Shows the layer. cancellable = shows the Cancel button. */
     public void start(String titleText, boolean cancellable) {
+        active = true;
         cancelled.set(false);
         title.setText(titleText);
         detail.setText(" ");
@@ -129,7 +131,13 @@ public class ProgressOverlay extends JComponent {
         });
     }
 
+    /** True from {@link #start} until {@link #finish}. */
+    public boolean isActive() {
+        return active;
+    }
+
     public void finish() {
+        active = false;
         setVisible(false);
         if (previousGlass != null) {
             frame.setGlassPane(previousGlass);

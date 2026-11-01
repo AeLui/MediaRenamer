@@ -77,6 +77,8 @@ final class SettingsPages {
     /** Interface language: Locale.ROOT = automatic (the system's). Only on the General page. */
     private JComboBox<Locale> uiLanguage;
     private JCheckBox darkTheme;
+    /** Automatic update check at start-up (General page). */
+    JCheckBox autoUpdate;
     /** Language of the downloaded data (Data services page). */
     private LanguagePicker dataLanguage;
     /** Category whose page is being built: the options created now belong to it. */
@@ -139,6 +141,9 @@ final class SettingsPages {
         darkTheme = new JCheckBox(tr("prefs.theme.dark"), Theme.isDark());
         track(darkTheme::isSelected, r -> darkTheme.addItemListener(e -> r.run()));
         g.row(tr("prefs.theme"), "info.theme", darkTheme, null, false);
+        autoUpdate = new JCheckBox(tr("prefs.updates.auto"), Settings.get().getBoolean(Settings.UPDATES_AUTO_CHECK, true));
+        track(autoUpdate::isSelected, r -> autoUpdate.addItemListener(e -> r.run()));
+        g.row(tr("prefs.updates"), "info.updates", autoUpdate, null, false);
         return g.done();
     }
 
@@ -466,6 +471,9 @@ final class SettingsPages {
 
     /** Saves the text fields of the built pages and the scan options (each one only possible with its URL and key). */
     void save() {
+        if (autoUpdate != null) {
+            Settings.get().put(Settings.UPDATES_AUTO_CHECK, Boolean.toString(autoUpdate.isSelected()));
+        }
         Map<String, String> v = values();
         v.forEach((k, value) -> Settings.get().put(k, value));
         scans().forEach((scanKey, on) -> {

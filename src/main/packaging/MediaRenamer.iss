@@ -110,6 +110,8 @@ Root: HKCU; Subkey: "Software\Classes\MediaRenamer.Menu"; Flags: uninsdeletekey 
 ; the context menu is there before the first start (in the registry of the user who runs the installer)
 Filename: "{app}\MediaRenamer-cli.exe"; Parameters: "-contextmenu"; Flags: runhidden waituntilterminated runasoriginaluser
 Filename: "{app}\MediaRenamer.exe"; Description: "{cm:LaunchProgram,MediaRenamer}"; Flags: nowait postinstall skipifsilent
+; the in-app update runs "setup.exe /SILENT /NORESTART /LAUNCH" and exits: relaunch the new version (as the user who started the update, also after an elevated all-users install)
+Filename: "{app}\MediaRenamer.exe"; Flags: nowait runasoriginaluser; Check: LaunchAfterUpdate
 
 ; The user data (%APPDATA%\MediaRenamer: preferences, encrypted API keys, presets, history) is never removed on uninstall
 
@@ -141,6 +143,21 @@ begin
     Sleep(250);
     I := I + 1;
   end;
+end;
+
+// True for a silent install started with /LAUNCH (the in-app update): the post-install entry above is skipped when silent
+function LaunchAfterUpdate: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  if not WizardSilent then
+    exit;
+  for I := 1 to ParamCount do
+    if CompareText(ParamStr(I), '/LAUNCH') = 0 then begin
+      Result := True;
+      exit;
+    end;
 end;
 
 function PrepareToInstall(var NeedsRestart: Boolean): String;

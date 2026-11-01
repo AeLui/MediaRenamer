@@ -1,8 +1,8 @@
 # Privacy
 
-MediaRenamer runs on your computer. It has **no telemetry, no analytics, no crash reports and no automatic update
-check**, and it never sends your files anywhere. It only connects to a networked system when you use a feature that
-needs it, and only to the service that feature uses.
+MediaRenamer runs on your computer. It has **no telemetry, no analytics and no crash reports**, and it never sends
+your files anywhere. It only connects to a networked system when you use a feature that needs it (the update check,
+which is on by default, is the one exception: see *Turning it off*), and only to the service that feature uses.
 
 ## What is sent, and when
 
@@ -14,6 +14,7 @@ needs it, and only to the service that feature uses.
 | [AcoustID](https://acoustid.org) (`api.acoustid.org`) | You fetch data with AcoustID (Music mode) | The duration and the audio fingerprint of each song, computed locally by `fpcalc`, and your client key |
 | [TheXEM](https://thexem.info) (`thexem.info`) | A format uses `{XEM…}` | The TheTVDB ID of the series |
 | [GitHub](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement) (`github.com`, Anime-Lists) | A format uses `{AnimeList…}` | A download of the public `anime-list.xml` |
+| [GitHub](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement) (`api.github.com`; on **Update** also `github.com`, `objects.githubusercontent.com` and `release-assets.githubusercontent.com`) | At start-up, at most once every 24 hours (unless you turned it off in *Preferences*), when you press **Check for updates** in *About*, and, only if you press **Update** in an installed copy, to download the new installer | A request for the latest release of the MediaRenamer repository (its version and notes); nothing else is sent. **Update** then downloads `MediaRenamer-<version>-setup.exe` from GitHub |
 | Your Jellyfin server | You enabled the library scan, or press *Test connection* | The scan request and the API key you configured, to the address you configured |
 | Your Plex server and [Plex](https://www.plex.tv/about/privacy-legal/) (`plex.tv`, `clients.plex.tv`) | You press **Sign in…**, enabled the library scan, or press *Test connection* | The sign-in PIN request (the sign-in itself happens in your browser), the scan request and your Plex token |
 
@@ -31,5 +32,8 @@ hand to remove everything.
 
 ## Turning it off
 
-Every connection above is opt-in: use the **ID3** or **File** modes, leave the API keys and media servers empty, and
-MediaRenamer does not connect to anything. See [CONFIGURATION.md](CONFIGURATION.md) and [DATA_SOURCES.md](DATA_SOURCES.md).
+The update check is the only connection that happens without you using a feature. Turn it off in
+**Preferences → General → Check for updates at start-up**; MediaRenamer then contacts GitHub only when you press
+**Check for updates** in *About*. Every other connection above is opt-in: use the **ID3** or **File** modes, leave the
+API keys and media servers empty, and MediaRenamer does not connect to anything (apart from the update check, if you
+left it on). See [CONFIGURATION.md](CONFIGURATION.md) and [DATA_SOURCES.md](DATA_SOURCES.md).
