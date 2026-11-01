@@ -96,8 +96,19 @@ Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs 
 [Icons]
 Name: "{autoprograms}\MediaRenamer"; Filename: "{app}\MediaRenamer.exe"
 Name: "{autodesktop}\MediaRenamer"; Filename: "{app}\MediaRenamer.exe"; Tasks: desktopicon
+; Explorer "Send to > MediaRenamer": opens it (or the window already open) with the selected files and folders
+Name: "{usersendto}\MediaRenamer"; Filename: "{app}\MediaRenamer.exe"
+
+[Registry]
+; Explorer context menu (MediaRenamer > Add to MediaRenamer / one entry per profile): written in the user's registry by
+; "MediaRenamer-cli.exe -contextmenu" below and by the app when the profiles change (ContextMenu.java); removed here
+Root: HKCU; Subkey: "Software\Classes\*\shell\MediaRenamer"; Flags: uninsdeletekey dontcreatekey
+Root: HKCU; Subkey: "Software\Classes\Directory\shell\MediaRenamer"; Flags: uninsdeletekey dontcreatekey
+Root: HKCU; Subkey: "Software\Classes\MediaRenamer.Menu"; Flags: uninsdeletekey dontcreatekey
 
 [Run]
+; the context menu is there before the first start (in the registry of the user who runs the installer)
+Filename: "{app}\MediaRenamer-cli.exe"; Parameters: "-contextmenu"; Flags: runhidden waituntilterminated runasoriginaluser
 Filename: "{app}\MediaRenamer.exe"; Description: "{cm:LaunchProgram,MediaRenamer}"; Flags: nowait postinstall skipifsilent
 
 ; The user data (%APPDATA%\MediaRenamer: preferences, encrypted API keys, presets, history) is never removed on uninstall

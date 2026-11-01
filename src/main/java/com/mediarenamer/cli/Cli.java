@@ -3,6 +3,7 @@ package com.mediarenamer.cli;
 import static com.mediarenamer.app.I18n.plural;
 import static com.mediarenamer.app.I18n.tr;
 
+import com.mediarenamer.app.ContextMenu;
 import com.mediarenamer.app.Logging;
 import com.mediarenamer.app.Settings;
 import com.mediarenamer.media.MediaInfo;
@@ -72,6 +73,10 @@ public final class Cli {
             }
             if (a.flags.contains("-profiles")) {
                 return presets();
+            }
+            if (a.flags.contains("-contextmenu")) {
+                // run by the installer: the Explorer menu is there before the window is opened for the first time
+                return ContextMenu.syncNow(Presets.get().list()) ? 0 : 1;
             }
             usage();
             return 1;

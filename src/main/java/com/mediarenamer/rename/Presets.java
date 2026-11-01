@@ -3,6 +3,7 @@ package com.mediarenamer.rename;
 import static com.mediarenamer.app.I18n.tr;
 
 import com.mediarenamer.app.AppFolders;
+import com.mediarenamer.app.ContextMenu;
 import com.mediarenamer.app.Logging;
 import groovy.json.JsonOutput;
 import groovy.json.JsonSlurper;
@@ -78,6 +79,8 @@ public final class Presets {
         try {
             List<Map<String, Object>> json = presets.stream().map(Preset::toJson).toList();
             com.mediarenamer.util.FileUtilities.writeAtomically(file, JsonOutput.prettyPrint(JsonOutput.toJson(json)));
+            // one Explorer context menu entry per profile
+            ContextMenu.sync(List.copyOf(presets));
         } catch (IOException e) {
             Logging.warn(tr("log.presetsSave", e.getMessage()));
         }

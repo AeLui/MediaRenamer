@@ -1,6 +1,15 @@
 # Command line
 
-Without arguments the GUI opens. With arguments, `com.mediarenamer.cli.Cli` runs the command line.
+Without arguments the GUI opens. With arguments that are only paths (files dropped on the exe or a shortcut, *Send to*)
+the GUI opens with them in the list, or they go to the window already open. With any option, `com.mediarenamer.cli.Cli`
+runs the command line.
+
+Explorer integration (Windows, installed copy):
+
+- `MediaRenamer.exe -open [--profile <id>] <paths...>` opens the GUI (or the window already open) with the paths and,
+  with `--profile`, applies that profile to them: what the Explorer context menu runs.
+- `MediaRenamer-cli.exe -contextmenu` rewrites the Explorer context menu (*Add to MediaRenamer* + one entry per profile)
+  in the user's registry; the installer runs it, and the app does it again when the window opens or the profiles change.
 On Windows the installed console launcher is `MediaRenamer-cli.exe` (`FileRenamer-cli.exe` up to 1.1.1); the environment
 variables use the `MEDIARENAMER_` prefix (`FILERENAMER_` up to 1.1.1).
 

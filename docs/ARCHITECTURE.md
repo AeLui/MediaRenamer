@@ -4,8 +4,10 @@ Java 21 application in a single Maven module. Root package `com.mediarenamer`.
 
 ```
 com.mediarenamer
-├── Main                    Entry point: without arguments opens the GUI; with arguments, CLI
-├── app/                    Settings (preferences + keys), I18n (languages), AppFolders, Logging
+├── Main                    Entry point: without arguments or with only paths opens the GUI; with options, CLI
+├── app/                    Settings (preferences + keys), I18n (languages), AppFolders, Logging,
+│                           SingleInstance (later starts hand their files to the open window),
+│                           ContextMenu (Explorer menu with the profiles, in HKCU through a .reg import)
 ├── web/                    Data model and clients of online services
 ├── media/                  MediaInfo (JNA), name detection, ReleaseInfo
 ├── similarity/             SxE, dates, normalization, metrics and Matcher

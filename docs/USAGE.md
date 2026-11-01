@@ -28,8 +28,15 @@ changed later in **Preferences**, which shows the same ⓘ icons. To see the wiz
 
 ## Basic flow
 
-1. **Add files**: drag files or folders onto *Source files*, or press **Add**
-   (or click the empty area). Folders are walked including their subfolders. If no row was selected, the first one
+1. **Add files**: drag files or folders onto the window, or press **Add**
+   (or click the empty area). They can also be dropped on `MediaRenamer.exe` or its desktop/Start menu shortcut,
+   or sent with **Send to → MediaRenamer** in Explorer: MediaRenamer opens with them, or adds them to the window
+   that is already open. (Windows does not open programs from files dropped on a *taskbar* icon; with the window
+   open, hold the drag over its taskbar button until it comes forward and drop it there.)
+   In Explorer, right-click files or folders → **MediaRenamer** (on Windows 11 under **Show more options**, or
+   Shift + right-click): **Add to MediaRenamer**, or the name of a **profile**, which adds them and applies that
+   profile at once (it fetches the data; nothing is renamed until you press **Apply**). The menu follows your profiles
+   and the interface language. Explorer only shows it for up to 15 selected files; for more, use *Send to*. Folders are walked including their subfolders. If no row was selected, the first one
    is selected in both lists; a selection you made is kept when you add more files or fetch data.
 2. **Identify**: choose one of these two options.
    - **Profiles**: applies a saved profile. It sets the target folder, format, data source, episode

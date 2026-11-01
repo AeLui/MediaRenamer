@@ -134,6 +134,8 @@ public class RenamePanel extends JPanel {
     private final ProgressOverlay overlay;
     /** Already downloaded episode lists, for the episode chooser (key: database, id, order, language). */
     private final java.util.Map<String, List<Episode>> episodeCache = new java.util.concurrent.ConcurrentHashMap<>();
+    /** Adds the dropped files and folders: the lists and, through {@link #fileDropHandler()}, the whole window. */
+    private TransferHandler fileDrop;
 
     public RenamePanel(JFrame frame) {
         this.frame = frame;
@@ -401,7 +403,7 @@ public class RenamePanel extends JPanel {
         filesList.setOpaque(false);
         namesList.setOpaque(false);
 
-        TransferHandler dnd = new TransferHandler() {
+        fileDrop = new TransferHandler() {
             @Override
             public boolean canImport(TransferSupport s) {
                 return s.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
@@ -419,9 +421,9 @@ public class RenamePanel extends JPanel {
                 }
             }
         };
-        filesList.setTransferHandler(dnd);
+        filesList.setTransferHandler(fileDrop);
         // "New names": accepts dropping files and also dragging a row to reorder the matches
-        namesList.setTransferHandler(new ReorderHandler(dnd));
+        namesList.setTransferHandler(new ReorderHandler(fileDrop));
         namesList.setDragEnabled(true);
         namesList.setDropMode(javax.swing.DropMode.INSERT);
 
@@ -899,6 +901,10 @@ public class RenamePanel extends JPanel {
             }
             addFiles(List.of(sel));
         }
+    }
+
+    TransferHandler fileDropHandler() {
+        return fileDrop;
     }
 
     void addFiles(List<File> input) {

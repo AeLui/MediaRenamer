@@ -2,9 +2,12 @@ package com.mediarenamer.ui;
 
 import static com.mediarenamer.app.I18n.tr;
 
+import com.mediarenamer.app.ContextMenu;
 import com.mediarenamer.app.I18n;
 import com.mediarenamer.app.Logging;
 import com.mediarenamer.app.Settings;
+import com.mediarenamer.app.SingleInstance;
+import com.mediarenamer.rename.Presets;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -22,6 +25,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.WindowConstants;
 
 /** Main window: header with logo and shortcuts, rename panel and status bar. */
@@ -32,7 +36,23 @@ public class MainFrame extends JFrame {
     private RenamePanel panel;
     private JButton themeButton;
 
-    public static void open() {
+    /** The open window (rebuilt by {@link #reload()}): it receives the files of later starts. */
+    private static MainFrame current;
+    /** Requests received before the window exists (e.g. while the setup wizard is open). */
+    private static final java.util.List<SingleInstance.Request> pending = new java.util.ArrayList<>();
+    /** Profile chosen in the Explorer context menu, applied once its files stop arriving (one start per file). */
+    private static String profileToApply;
+    private static final Timer profileTimer = new Timer(700, e -> applyRequestedProfile());
+
+    static {
+        profileTimer.setRepeats(false);
+    }
+
+    /**
+     * Opens the window with the requested files in the list (dropped on the exe or a shortcut, "Send to", Explorer
+     * context menu) and, if one was chosen, applies the profile to them.
+     */
+    public static void open(SingleInstance.Request request) {
         Theme.install();
         I18n.applyToSwing();
         // first run (no preferences file yet): setup wizard before the main window, which then opens in the chosen language
@@ -42,6 +62,48 @@ public class MainFrame extends JFrame {
         }
         MainFrame f = new MainFrame();
         f.setVisible(true);
+        pending.add(0, request);
+        pending.forEach(f::deliver);
+        pending.clear();
+        // the Explorer menu follows the profiles, the language and the place of the exe (after an update)
+        ContextMenu.sync(Presets.get().list());
+    }
+
+    /** Request of a later start (on the EDT): its files are added to the open window, which comes to the front. */
+    public static void receive(SingleInstance.Request request) {
+        MainFrame f = current;
+        if (f == null || !f.isDisplayable()) {
+            pending.add(request);
+            return;
+        }
+        f.deliver(request);
+        if ((f.getExtendedState() & ICONIFIED) != 0) {
+            f.setExtendedState(f.getExtendedState() & ~ICONIFIED);
+        }
+        // Windows only lets the foreground app raise windows: briefly "always on top" brings it forward anyway
+        f.setAlwaysOnTop(true);
+        f.toFront();
+        f.requestFocus();
+        f.setAlwaysOnTop(false);
+    }
+
+    private void deliver(SingleInstance.Request request) {
+        if (!request.files().isEmpty()) {
+            panel.addFiles(request.files());
+        }
+        if (request.profile() != null) {
+            profileToApply = request.profile();
+            profileTimer.restart();
+        }
+    }
+
+    private static void applyRequestedProfile() {
+        String id = profileToApply;
+        profileToApply = null;
+        if (id == null || current == null) {
+            return;
+        }
+        Presets.get().find(id).ifPresentOrElse(current.panel::applyPreset, () -> Logging.warn(tr("profile.notFound", id)));
     }
 
     /**
@@ -57,6 +119,7 @@ public class MainFrame extends JFrame {
         dispose();
         f.setVisible(true);
         f.panel.addFiles(files);
+        ContextMenu.sync(Presets.get().list());
     }
 
     /** Updates the theme button and repaints after switching light/dark (header button or Preferences). */
@@ -87,7 +150,10 @@ public class MainFrame extends JFrame {
         root.add(header(), BorderLayout.NORTH);
         root.add(panel, BorderLayout.CENTER);
         root.add(statusBar(), BorderLayout.SOUTH);
+        // files can be dropped anywhere in the window, not only on the lists
+        root.setTransferHandler(panel.fileDropHandler());
         setContentPane(root);
+        current = this;
 
         Logging.addListener(logListener);
         setMinimumSize(new Dimension(1000, 600));
