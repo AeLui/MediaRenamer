@@ -7,6 +7,8 @@ and the versions follow [Semantic Versioning](https://semver.org/). The section 
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-11-01
+
 ### Added
 
 - Update check: MediaRenamer looks on GitHub for a newer version a few seconds after it starts (at most once a day;
@@ -67,7 +69,8 @@ and the versions follow [Semantic Versioning](https://semver.org/). The section 
 - OMDb (poor results): profiles and preferences that used it switch to TheMovieDB.
 - The action selector in profiles: profiles no longer set the action.
 
-[Unreleased]: https://github.com/AeLui/MediaRenamer/compare/v2.7.1...HEAD
+[Unreleased]: https://github.com/AeLui/MediaRenamer/compare/v2.8.0...HEAD
+[2.8.0]: https://github.com/AeLui/MediaRenamer/compare/v2.7.1...v2.8.0
 [2.7.1]: https://github.com/AeLui/MediaRenamer/compare/v2.7.0...v2.7.1
 [2.7.0]: https://github.com/AeLui/MediaRenamer/compare/v2.6.1...v2.7.0
 [2.6.1]: https://github.com/AeLui/MediaRenamer/compare/v2.6.0...v2.6.1
