@@ -115,6 +115,7 @@ MediaRenamer is opened. Do not confuse it with the *data language* (titles, over
 | Another movie or series for some files | Select them and press **Manual search** (also in the context menu). If none is selected, the unidentified ones are used. It shows posters and, on mouse hover, the full details |
 | Another episode for a row | Select the row and press **Episode** (or right click → *Choose episode…*). Filter by number (`1x02`, `S01E02`, `12`) or by title. Ctrl/Shift + click selects several for a file with two episodes |
 | Moving the match of one row to another | **Drag** the name in *Target files* to its correct position. The other matches shift and the original files do not move |
+| Pairing a file with another match (reordering the source list) | **Drag** the file in *Source files* to its correct position. The other files shift and the matches stay where they are, so each file takes the match of its new row |
 | Changing only the name of a row | Double click the new name, or right click → *Edit name* |
 | Removing the match of a row | Right click → *Clear match* |
 | Seeing the format variables of a row | **Bindings** (or right click → *Show bindings*) |

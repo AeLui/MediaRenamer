@@ -423,11 +423,14 @@ public class RenamePanel extends JPanel {
                 }
             }
         };
-        filesList.setTransferHandler(fileDrop);
-        // "New names": accepts dropping files and also dragging a row to reorder the matches
-        namesList.setTransferHandler(new ReorderHandler(fileDrop));
-        namesList.setDragEnabled(true);
-        namesList.setDropMode(javax.swing.DropMode.INSERT);
+        // both lists accept dropping files and dragging a row: in "Original files" it reorders the files,
+        // in "New names" it reorders the matches
+        filesList.setTransferHandler(new ReorderHandler(filesList, fileDrop, this::moveFile));
+        namesList.setTransferHandler(new ReorderHandler(namesList, fileDrop, this::moveMatch));
+        for (JList<Row> l : List.of(filesList, namesList)) {
+            l.setDragEnabled(true);
+            l.setDropMode(javax.swing.DropMode.INSERT);
+        }
 
         filesList.addMouseListener(popup(this::filesMenu));
         namesList.addMouseListener(popup(this::namesMenu));
@@ -449,18 +452,26 @@ public class RenamePanel extends JPanel {
         });
     }
 
-    /** Internal drag data type: index of the "New names" row being moved. */
-    private static final DataFlavor ROW_FLAVOR = new DataFlavor(Integer.class, "New names row");
+    /** Internal drag data type: index of the row being moved, tagged with the list it was dragged from. */
+    private record RowDrag(JList<Row> list, int index) {
+    }
+
+    private static final DataFlavor ROW_FLAVOR = new DataFlavor(RowDrag.class, "MediaRenamer row");
 
     /**
-     * Dragging in "New names": the dragged match is inserted at the
-     * target position and the others shift; the original files do not move.
+     * Dragging a row inside one list: the dragged item is inserted at the target position and the others shift.
+     * In "Original files" the files move and the matches stay ({@link #moveFile}); in "New names" the matches move
+     * and the files stay ({@link #moveMatch}). A row dragged to the other list is rejected.
      */
     private final class ReorderHandler extends TransferHandler {
+        private final JList<Row> list;
         private final TransferHandler files;
+        private final java.util.function.BiConsumer<Integer, Integer> move;
 
-        ReorderHandler(TransferHandler files) {
+        ReorderHandler(JList<Row> list, TransferHandler files, java.util.function.BiConsumer<Integer, Integer> move) {
+            this.list = list;
             this.files = files;
+            this.move = move;
         }
 
         @Override
@@ -470,10 +481,11 @@ public class RenamePanel extends JPanel {
 
         @Override
         protected java.awt.datatransfer.Transferable createTransferable(JComponent c) {
-            int i = namesList.getSelectedIndex();
-            if (i < 0 || rows.get(i).match == null) {
+            int i = list.getSelectedIndex();
+            if (i < 0 || (list == namesList && rows.get(i).match == null)) {
                 return null;
             }
+            RowDrag drag = new RowDrag(list, i);
             return new java.awt.datatransfer.Transferable() {
                 @Override
                 public DataFlavor[] getTransferDataFlavors() {
@@ -487,7 +499,7 @@ public class RenamePanel extends JPanel {
 
                 @Override
                 public Object getTransferData(DataFlavor f) {
-                    return i;
+                    return drag;
                 }
             };
         }
@@ -495,7 +507,7 @@ public class RenamePanel extends JPanel {
         @Override
         public boolean canImport(TransferSupport s) {
             if (s.isDataFlavorSupported(ROW_FLAVOR)) {
-                return s.isDrop();
+                return s.isDrop() && s.getComponent() == list;
             }
             return files.canImport(s);
         }
@@ -506,21 +518,59 @@ public class RenamePanel extends JPanel {
                 return files.importData(s);
             }
             try {
-                int from = (Integer) s.getTransferable().getTransferData(ROW_FLAVOR);
+                RowDrag drag = (RowDrag) s.getTransferable().getTransferData(ROW_FLAVOR);
+                if (drag.list() != list) {
+                    return false;
+                }
                 int to = ((JList.DropLocation) s.getDropLocation()).getIndex();
-                moveMatch(from, to);
+                move.accept(drag.index(), to);
                 return true;
             } catch (Exception e) {
-                Logging.warn("Reordenar: " + e.getMessage());
+                Logging.warn("Reorder: " + e.getMessage());
                 return false;
             }
         }
     }
 
+    /** Whether moving row from to insertion index to is valid and changes the order. */
+    private static boolean isMove(int from, int to, int size) {
+        return from >= 0 && from < size && to >= 0 && to <= size && to != from && to != from + 1;
+    }
+
+    /**
+     * Moves the original file of row from to position to (insertion index); the matches keep their positions, so the
+     * moved file and those it passes over get new matches, and the names are recomputed.
+     */
+    void moveFile(int from, int to) {
+        List<Row> all = allRows();
+        if (!isMove(from, to, all.size())) {
+            return;
+        }
+        List<Object> matches = new ArrayList<>();
+        for (Row r : all) {
+            matches.add(r.match);
+        }
+        Row moved = all.remove(from);
+        int insert = to > from ? to - 1 : to;
+        all.add(insert, moved);
+        for (int i = 0; i < all.size(); i++) {
+            Row r = all.get(i);
+            if (r.match != matches.get(i)) {
+                r.match = matches.get(i);
+                r.target = null;
+                r.error = null;
+            }
+        }
+        rows.clear();
+        all.forEach(rows::addElement);
+        filesList.setSelectedIndex(insert);
+        reformat();
+    }
+
     /** Moves the match of row from to position to (insertion index) and recomputes the names. */
     void moveMatch(int from, int to) {
         List<Row> all = allRows();
-        if (from < 0 || from >= all.size() || to < 0 || to > all.size() || to == from || to == from + 1) {
+        if (!isMove(from, to, all.size())) {
             return;
         }
         List<Object> matches = new ArrayList<>();
@@ -961,6 +1011,11 @@ public class RenamePanel extends JPanel {
             l.add(rows.get(i));
         }
         return l;
+    }
+
+    /** Rows of the list, in order (a copy of the list; the rows themselves are live). */
+    List<Row> rowList() {
+        return allRows();
     }
 
     /** Original files of the list, in order. */

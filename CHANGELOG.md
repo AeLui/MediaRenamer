@@ -7,6 +7,11 @@ and the versions follow [Semantic Versioning](https://semver.org/). The section 
 
 ## [Unreleased]
 
+### Added
+
+- The source file list can be reordered by dragging a file to another position: the matches stay in place, so each
+  file takes the match of its new row and the new names are updated.
+
 ## [2.8.0] - 2026-11-01
 
 ### Added
