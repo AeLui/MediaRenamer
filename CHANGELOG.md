@@ -7,6 +7,11 @@ and the versions follow [Semantic Versioning](https://semver.org/). The section 
 
 ## [Unreleased]
 
+### Fixed
+
+- Dragging a file in the source list now moves the whole row, with its match and new name, instead of giving the file
+  the match of its new position.
+
 ## [2.9.0] - 2026-11-03
 
 ### Added

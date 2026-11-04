@@ -144,8 +144,8 @@ com.mediarenamer
   `Selector.Request` with source, language and search function) and by the *Manual search* button.
 - `EpisodeChooserDialog`: choose the episode of a row; the episode
   list is cached per series/order/language. Reordering by dragging: `RenamePanel.ReorderHandler` (one per list; a
-  row dragged to the other list is rejected) + `moveFile(from, to)` in *Source files* (shifts the files, not the
-  matches) or `moveMatch(from, to)` in *Target files* (shifts the matches, not the files).
+  row dragged to the other list is rejected) + `moveFile(from, to)` in *Source files* (moves the whole row: file,
+  match and name) or `moveMatch(from, to)` in *Target files* (shifts the matches, not the files).
 - `ValidateDialog` + `rename.NameValidator`: name pre-check with
   errors/warnings and a cleanup suggestion (`NameValidator.clean`).
 - `ProgressOverlay`: modal layer in the window's *glass pane* (not another window) with progress and Cancel, used

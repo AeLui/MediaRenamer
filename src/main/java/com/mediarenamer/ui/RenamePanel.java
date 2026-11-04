@@ -423,8 +423,8 @@ public class RenamePanel extends JPanel {
                 }
             }
         };
-        // both lists accept dropping files and dragging a row: in "Original files" it reorders the files,
-        // in "New names" it reorders the matches
+        // both lists accept dropping files and dragging a row: in "Original files" it reorders the rows,
+        // in "New names" it reorders the matches only
         filesList.setTransferHandler(new ReorderHandler(filesList, fileDrop, this::moveFile));
         namesList.setTransferHandler(new ReorderHandler(namesList, fileDrop, this::moveMatch));
         for (JList<Row> l : List.of(filesList, namesList)) {
@@ -460,8 +460,8 @@ public class RenamePanel extends JPanel {
 
     /**
      * Dragging a row inside one list: the dragged item is inserted at the target position and the others shift.
-     * In "Original files" the files move and the matches stay ({@link #moveFile}); in "New names" the matches move
-     * and the files stay ({@link #moveMatch}). A row dragged to the other list is rejected.
+     * In "Original files" the whole row moves, file and match together ({@link #moveFile}); in "New names" the
+     * matches move and the files stay ({@link #moveMatch}). A row dragged to the other list is rejected.
      */
     private final class ReorderHandler extends TransferHandler {
         private final JList<Row> list;
@@ -538,29 +538,17 @@ public class RenamePanel extends JPanel {
     }
 
     /**
-     * Moves the original file of row from to position to (insertion index); the matches keep their positions, so the
-     * moved file and those it passes over get new matches, and the names are recomputed.
+     * Moves row from to position to (insertion index): the file travels with its match and new name, so only the
+     * order of the list changes. The names are recomputed because the format may use the position ({i}).
      */
     void moveFile(int from, int to) {
         List<Row> all = allRows();
         if (!isMove(from, to, all.size())) {
             return;
         }
-        List<Object> matches = new ArrayList<>();
-        for (Row r : all) {
-            matches.add(r.match);
-        }
         Row moved = all.remove(from);
         int insert = to > from ? to - 1 : to;
         all.add(insert, moved);
-        for (int i = 0; i < all.size(); i++) {
-            Row r = all.get(i);
-            if (r.match != matches.get(i)) {
-                r.match = matches.get(i);
-                r.target = null;
-                r.error = null;
-            }
-        }
         rows.clear();
         all.forEach(rows::addElement);
         filesList.setSelectedIndex(insert);

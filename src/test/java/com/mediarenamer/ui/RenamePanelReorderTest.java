@@ -24,14 +24,14 @@ import javax.swing.TransferHandler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-/** Dragging a row in "Original files" moves the file and leaves the matches in place; "New names" does the reverse. */
+/** Dragging a row in "Original files" moves the whole row (file and match); "New names" moves only the matches. */
 class RenamePanelReorderTest {
 
     @TempDir
     Path dir;
 
     @Test
-    void movingAFileKeepsTheMatchesInPlace() throws Exception {
+    void movingAFileMovesItsMatchWithIt() throws Exception {
         assumeFalse(GraphicsEnvironment.isHeadless());
         List<File> files = files("a", "b", "c", "d");
         SwingUtilities.invokeAndWait(() -> {
@@ -41,15 +41,15 @@ class RenamePanelReorderTest {
                 // a down to the end (insertion index 4)
                 panel.moveFile(0, 4);
                 assertEquals(List.of("b", "c", "d", "a"), names(panel));
-                assertEquals(Arrays.asList("A", "B", "C", "D"), matches(panel));
+                assertEquals(Arrays.asList("B", "C", "D", "A"), matches(panel));
                 // back up to the top
                 panel.moveFile(3, 0);
                 assertEquals(List.of("a", "b", "c", "d"), names(panel));
                 assertEquals(Arrays.asList("A", "B", "C", "D"), matches(panel));
-                // c above b: only those two rows change
+                // c above b
                 panel.moveFile(2, 1);
                 assertEquals(List.of("a", "c", "b", "d"), names(panel));
-                assertEquals(Arrays.asList("A", "B", "C", "D"), matches(panel));
+                assertEquals(Arrays.asList("A", "C", "B", "D"), matches(panel));
                 assertEquals(1, lists(panel).get(0).getSelectedIndex(), "the moved file stays selected");
             } finally {
                 f.dispose();
@@ -95,7 +95,7 @@ class RenamePanelReorderTest {
     }
 
     @Test
-    void movingAnUnmatchedFileCarriesNoMatch() throws Exception {
+    void movingAnUnmatchedFileKeepsItUnmatched() throws Exception {
         assumeFalse(GraphicsEnvironment.isHeadless());
         List<File> files = files("a", "b", "c");
         SwingUtilities.invokeAndWait(() -> {
@@ -103,10 +103,10 @@ class RenamePanelReorderTest {
             try {
                 RenamePanel panel = panel(f, files);
                 panel.rowList().get(2).match = null;
-                panel.moveFile(0, 3);
-                assertEquals(List.of("b", "c", "a"), names(panel));
-                assertEquals(Arrays.asList("A", "B", null), matches(panel));
-                assertNull(panel.rowList().get(2).target);
+                panel.moveFile(2, 0);
+                assertEquals(List.of("c", "a", "b"), names(panel));
+                assertEquals(Arrays.asList(null, "A", "B"), matches(panel));
+                assertNull(panel.rowList().get(0).target);
             } finally {
                 f.dispose();
             }

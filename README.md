@@ -37,7 +37,7 @@ command line.
 - **Unsaved changes are kept** while moving between Preferences categories or profiles (marked in orange); closing
   asks whether to save or discard them.
 - **Manual corrections**: manual search with posters, choosing the episode of a row and reordering
-  the source files or the matches by dragging.
+  the list (source files) or the matches (target files) by dragging.
 - **Name pre-check** (invalid characters, reserved names, lengths, duplicates…) with a cleanup
   suggestion, and a **cancellable modal progress** while fetching data and renaming.
 - **Jellyfin and Plex**: option to scan the libraries of each server through its API after each rename, globally or
