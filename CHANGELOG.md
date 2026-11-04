@@ -7,6 +7,8 @@ and the versions follow [Semantic Versioning](https://semver.org/). The section 
 
 ## [Unreleased]
 
+## [2.9.1] - 2026-11-04
+
 ### Fixed
 
 - Dragging a file in the source list now moves the whole row, with its match and new name, instead of giving the file
@@ -81,7 +83,8 @@ and the versions follow [Semantic Versioning](https://semver.org/). The section 
 - OMDb (poor results): profiles and preferences that used it switch to TheMovieDB.
 - The action selector in profiles: profiles no longer set the action.
 
-[Unreleased]: https://github.com/AeLui/MediaRenamer/compare/v2.9.0...HEAD
+[Unreleased]: https://github.com/AeLui/MediaRenamer/compare/v2.9.1...HEAD
+[2.9.1]: https://github.com/AeLui/MediaRenamer/compare/v2.9.0...v2.9.1
 [2.9.0]: https://github.com/AeLui/MediaRenamer/compare/v2.8.0...v2.9.0
 [2.8.0]: https://github.com/AeLui/MediaRenamer/compare/v2.7.1...v2.8.0
 [2.7.1]: https://github.com/AeLui/MediaRenamer/compare/v2.7.0...v2.7.1
